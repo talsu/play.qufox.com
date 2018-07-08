@@ -11,12 +11,23 @@ game.PlayScreen = me.ScreenObject.extend({
         this.HUD = new game.HUD.Container();
         me.game.world.addChild(this.HUD);
         me.game.world.addChild(me.pool.pull("block", 60, 60));
+
+        me.input.bindKey(me.input.KEY.LEFT, "left");
+        me.input.bindKey(me.input.KEY.RIGHT, "right");
+        me.input.bindKey(me.input.KEY.A, "left");
+        me.input.bindKey(me.input.KEY.D, "right");
     },
 
     /**
      *  action to perform when leaving this screen (state change)
      */
     onDestroyEvent: function() {
+
+        me.input.unbindKey(me.input.KEY.LEFT);
+        me.input.unbindKey(me.input.KEY.RIGHT);
+        me.input.unbindKey(me.input.KEY.A);
+        me.input.unbindKey(me.input.KEY.D);
+        
         // remove the HUD from the game world
         me.game.world.removeChild(this.HUD);
     }
