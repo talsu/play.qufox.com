@@ -4,7 +4,10 @@ game.PlayField = me.Container.extend({
     var blockSize = 20;
     var rowCount = 20;
     var colCount = 10;
-    this._super(me.Container, "init", [x, y, colCount * blockSize, rowCount * blockSize]);
+    this._super(me.Container, "init", [x, y,
+      game.PlayField.COL_COUNT * game.PlayField.BLOCK_SIZE,
+      game.PlayField.ROW_COUNT * game.PlayField.BLOCK_SIZE
+    ]);
 
     this.addChild(me.pool.pull("block", 0, 0));
 
@@ -31,5 +34,10 @@ game.PlayField = me.Container.extend({
     renderer.setColor(color);
 
     this._super(me.Container, "draw", [renderer]);
-  }
+  },
+  
 });
+
+game.PlayField.BLOCK_SIZE = 20;
+game.PlayField.ROW_COUNT = 20;
+game.PlayField.COL_COUNT = 10;
