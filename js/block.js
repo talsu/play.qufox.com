@@ -1,33 +1,52 @@
 game.Block = me.Entity.extend({
   init : function (x, y) {
-    this._super(me.Entity, "init", [x, y, { width: 20, height: 20 }]);
+    this._super(me.Entity, "init", [x, y, { width: 60, height: 60 }]);
 
     this.dropVelocity = 20;
 
-    this.renderable = new (me.Renderable.extend({
-        init : function () {
-            this._super(me.Renderable, "init", [0, 0, 20, 20]);
-        },
-        destroy : function () {},
-        draw : function (renderer) {
-            renderer.setColor('#5EFF7E');
-            renderer.drawShape(new me.Polygon(0, 0, [
-              new me.Vector2d(20, 0),
-              new me.Vector2d(40, 0),
-              new me.Vector2d(40, 60),
-              new me.Vector2d(0, 60),
-              new me.Vector2d(0, 40),
-              new me.Vector2d(20, 40)
-            ]));
-        }
-    }));
+    // this.renderable = new (me.Renderable.extend({
+    //     init : function () {
+    //         this._super(me.Renderable, "init", [0, 0, 60, 60]);
+    //     },
+    //     destroy : function () {},
+    //     draw : function (renderer) {
+    //         var color = renderer.getColor();
+    //         renderer.setColor('#5EFF7E');
+    //         renderer.drawShape(new me.Polygon(0, 0, [
+    //           new me.Vector2d(20, 0),
+    //           new me.Vector2d(40, 0),
+    //           new me.Vector2d(40, 60),
+    //           new me.Vector2d(0, 60),
+    //           new me.Vector2d(0, 40),
+    //           new me.Vector2d(20, 40)
+    //         ]));
+    //         renderer.setColor(color);
+    //
+    //     },
+    //     update: function() {
+    //       return false;
+    //     }
+    // }));
     // this.alwaysUpdate = true;
 
 
     this.velx = 450;
     this.maxX = me.game.viewport.width - this.width;
   },
+  draw : function (renderer) {
+      var color = renderer.getColor();
+      renderer.setColor('#5EFF7E');
+      renderer.drawShape(new me.Polygon(0, 0, [
+        new me.Vector2d(20, 0),
+        new me.Vector2d(40, 0),
+        new me.Vector2d(40, 60),
+        new me.Vector2d(0, 60),
+        new me.Vector2d(0, 40),
+        new me.Vector2d(20, 40)
+      ]));
+      renderer.setColor(color);
 
+  },
   update : function (time) {
     if (me.input.isKeyPressed("left")) {
         this.pos.x -= this.velx * time / 1000;
@@ -36,8 +55,6 @@ game.Block = me.Entity.extend({
     if (me.input.isKeyPressed("right")) {
         this.pos.x += this.velx * time / 1000;
     }
-
-
     this.pos.x = this.pos.x.clamp(0, this.maxX);
 
     return true;
