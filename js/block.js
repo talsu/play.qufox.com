@@ -11,8 +11,16 @@ game.Block = me.Entity.extend({
     this.move(initCol, initRow);
   },
 
-  getDotArray(rotateType) {
+  getDotOffsets(rotateType) {
     return game.Block.DOTS[this.blockType][rotateType || this.rotateType];
+  },
+
+  getDots(rotateType, col, row) {
+    let colBase = (col === undefined) ? this.col : col;
+    let rowBase = (row === undefined) ? this.row : row;
+    return this.getDotOffsets(rotateType).map(colRow => {
+      return [colBase + colRow[0], rowBase + colRow[1]];
+    });
   },
 
   rotate(isClockwise, dots) {
@@ -41,8 +49,8 @@ game.Block = me.Entity.extend({
 
   draw : function (renderer) {
       let color = renderer.getColor();
-      renderer.setColor(game.Block.COLOR[this.blockType]);
-      this.getDotArray().forEach(function(colRow) {
+      renderer.setColor(this.isDeactive?"grey":game.Block.COLOR[this.blockType]);
+      this.getDotOffsets().forEach(function(colRow) {
         renderer.fillRect(
           colRow[0] * game.PlayField.BLOCK_SIZE,
           colRow[1] * game.PlayField.BLOCK_SIZE,
@@ -54,14 +62,24 @@ game.Block = me.Entity.extend({
   },
 
   isValidPosition: function(rotateType, col, row, blockedDots) {
-    return this.getDotArray(rotateType).every(colRow => {
-      let newCol = col + colRow[0];
-      let newRow = row + colRow[1];
+
+    return this.getDots(rotateType, col, row).every(colRow => {
+      let newCol = colRow[0];
+      let newRow = colRow[1];
       if (blockedDots && blockedDots.some(dot => dot[0] === newCol && dot[1] === newRow)) return false;
       if (newCol < 0 || game.PlayField.COL_COUNT <= newCol) return false;
       if (newRow < 0 || game.PlayField.ROW_COUNT <= newRow) return false;
       return true;
     });
+
+    // return this.getDotOffsets(rotateType).every(colRow => {
+    //   let newCol = col + colRow[0];
+    //   let newRow = row + colRow[1];
+    //   if (blockedDots && blockedDots.some(dot => dot[0] === newCol && dot[1] === newRow)) return false;
+    //   if (newCol < 0 || game.PlayField.COL_COUNT <= newCol) return false;
+    //   if (newRow < 0 || game.PlayField.ROW_COUNT <= newRow) return false;
+    //   return true;
+    // });
   },
 
   move: function(col, row, dots) {
@@ -81,8 +99,15 @@ game.Block = me.Entity.extend({
   moveUp: function(dots) { return this.move(this.col, this.row - 1, dots); },
   moveDown: function(dots) { return this.move(this.col, this.row + 1, dots); },
 
+  hardDrop: function(dots) { while (this.moveDown(dots)) {} },
+
+  deactive: function() {
+    this.isDeactive = true;
+  },
+
 });
 
+game.Block.TYPES = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
 game.Block.DOTS = {
   I: {
     0:[[0,1],[1,1],[2,1],[3,1]],

@@ -19,8 +19,9 @@ game.PlayScreen = me.ScreenObject.extend({
     me.input.bindKey(me.input.KEY.RIGHT, "right");
     me.input.bindKey(me.input.KEY.A, "left");
     me.input.bindKey(me.input.KEY.D, "right");
-    me.input.bindKey(me.input.KEY.UP, "drop");
-    me.input.bindKey(me.input.KEY.DOWN, "down");
+    me.input.bindKey(me.input.KEY.UP, "hardDrop");
+    me.input.bindKey(me.input.KEY.SPACE, "hardDrop");
+    me.input.bindKey(me.input.KEY.DOWN, "softDrop");
     me.input.bindKey(me.input.KEY.Z, "anticlockwise");
     me.input.bindKey(me.input.KEY.X, "clockwise");
   },
@@ -34,6 +35,11 @@ game.PlayScreen = me.ScreenObject.extend({
     me.input.unbindKey(me.input.KEY.RIGHT);
     me.input.unbindKey(me.input.KEY.A);
     me.input.unbindKey(me.input.KEY.D);
+    me.input.unbindKey(me.input.KEY.UP);
+    me.input.unbindKey(me.input.KEY.SPACE);
+    me.input.unbindKey(me.input.KEY.DOWN);
+    me.input.unbindKey(me.input.KEY.Z);
+    me.input.unbindKey(me.input.KEY.X);
 
     // remove the HUD from the game world
     me.game.world.removeChild(this.HUD);

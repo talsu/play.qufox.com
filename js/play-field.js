@@ -8,89 +8,107 @@ game.PlayField = me.Container.extend({
       game.PlayField.COL_COUNT * game.PlayField.BLOCK_SIZE,
       game.PlayField.ROW_COUNT * game.PlayField.BLOCK_SIZE
     ]);
-    this.activeBlock = me.pool.pull("block", "I");
-    this.addChild(this.activeBlock);
-
-    // this.addChild(new (me.Renderable.extend({
-    //         init : function () {
-    //             this._super(me.Renderable, "init", [0, 0, 1100, 100]);
-    //         },
-    //         destroy : function () {},
-    //         draw : function (renderer) {
-    //             var color = renderer.getColor();
-    //             renderer.setColor('#5EFF7E');
-    //             renderer.fillRect(0, 0, this.width, this.height);
-    //             renderer.setColor(color);
-    //         }
-    //     })));
-
-
-    this.keyPressScala = {
-      left:0,right:0,drop:0,down:0,anticlockwise:0,clockwise:0
-    };
+    this.activeBlock = null;
+    this.deactiveBlocks = [];
+    this.deactiveDots = [];
+    this.spawnBlock();
   },
 
   draw: function(renderer) {
     var color = renderer.getColor();
-    renderer.setColor('grey');
+    renderer.setColor('white');
     renderer.fillRect(this.left, this.top, this.width, this.height);
     renderer.setColor(color);
 
     this._super(me.Container, "draw", [renderer]);
   },
 
+  spawnBlock: function() {
+    let blockType = game.Block.TYPES[Math.floor(Math.random()*game.Block.TYPES.length)];
+    this.activeBlock = me.pool.pull("block", blockType);
+    this.addChild(this.activeBlock);
+  },
+
+  chargeDAS: function(direction, isPressed, time) {
+    if (!this.dasFlags) this.dasFlags = {};
+    if (!this.dasFlags[direction]) this.dasFlags[direction] = 0;
+    let oldValue = this.dasFlags[direction];
+    if (isPressed) this.dasFlags[direction] += time;
+    else this.dasFlags[direction] = 0;
+    let newValue = this.dasFlags[direction];
+
+    if (oldValue == 0 && newValue) this.onInput(direction, "press");
+    if (oldValue && newValue == 0) this.onInput(direction, "release");
+
+    if (newValue == 0) return;
+
+    let rOld = Math.floor((oldValue - game.PlayField.DAS_INIT_MS) / game.PlayField.DAS_REPEAT_MS);
+    let rNew = Math.floor((newValue - game.PlayField.DAS_INIT_MS) / game.PlayField.DAS_REPEAT_MS);
+
+    if (rNew >= 0 && rOld < rNew) {
+      if (rOld < 0) rOld = -1;
+      for (let i = 0; i < (rNew - rOld); ++i) {
+        this.onInput(direction, "hold");
+      }
+    }
+  },
+  getDeactiveDots: function() {
+    return this.deactiveBlocks.map(block => block.getDots()).reduce((a, b) => a.concat(b),[]);
+  },
+  onInput: function(direction, state) {
+    console.log({time:new Date().getTime(), direction:direction, state:state});
+
+    if (!this.activeBlock) return;
+
+    if (state == "press" || state == "hold") {
+      switch (direction) {
+        case "left": this.activeBlock.moveLeft(this.deactiveDots); break;
+        case "right": this.activeBlock.moveRight(this.deactiveDots); break;
+        case "softDrop": this.activeBlock.moveDown(this.deactiveDots); break;
+      }
+    }
+
+    if (state == "press") {
+      switch (direction) {
+        case "clockwise": this.activeBlock.rotate(true, this.deactiveDots); break;
+        case "anticlockwise": this.activeBlock.rotate(false, this.deactiveDots); break;
+        case "hardDrop": this.activeBlock.hardDrop(this.deactiveDots); this.onDrop(); break;
+      }
+    }
+  },
+
   update: function (time) {
     this._super(me.Container, "update", [time]);
 
-    if (me.input.isKeyPressed("left")) {
-      if (!this.keyPressScala.left) this.activeBlock.moveLeft();
-      this.keyPressScala.left += time;
-    }
-
-    if (me.input.isKeyPressed("right")) {
-      if (!this.keyPressScala.right) this.activeBlock.moveRight();
-      this.keyPressScala.right += time;
-    }
-
-    if (me.input.isKeyPressed("down")) {
-      if (!this.keyPressScala.down) this.activeBlock.moveDown();
-      this.keyPressScala.down += time;
-    }
-
-    if (me.input.isKeyPressed("drop")) {
-      if (!this.keyPressScala.drop) this.activeBlock.moveUp();
-      this.keyPressScala.drop += time;
-    }
-
-    if (me.input.isKeyPressed("clockwise")) {
-      if (!this.keyPressScala.clockwise) this.activeBlock.rotate(true);
-      this.keyPressScala.clockwise += time;
-    }
-
-    if (me.input.isKeyPressed("anticlockwise")) {
-      if (!this.keyPressScala.anticlockwise) this.activeBlock.rotate(false);
-      this.keyPressScala.anticlockwise += time;
-    }
-
-    if (this.keyPressScala.left > 140 || !me.input.keyStatus('left')) this.keyPressScala.left = 0;
-    if (this.keyPressScala.right > 140 || !me.input.keyStatus('right')) this.keyPressScala.right = 0;
-    if (this.keyPressScala.down > 140 || !me.input.keyStatus('down')) this.keyPressScala.down = 0;
-    if (this.keyPressScala.drop > 140 || !me.input.keyStatus('drop')) this.keyPressScala.drop = 0;
-
-    if (this.keyPressScala.clockwise > 200 || !me.input.keyStatus('clockwise')) this.keyPressScala.clockwise = 0;
-    if (this.keyPressScala.anticlockwise > 200 || !me.input.keyStatus('anticlockwise')) this.keyPressScala.anticlockwise = 0;
+    this.chargeDAS("left", me.input.isKeyPressed("left"), time);
+    this.chargeDAS("right", me.input.isKeyPressed("right"), time);
+    this.chargeDAS("softDrop", me.input.isKeyPressed("softDrop"), time);
+    this.chargeDAS("hardDrop", me.input.isKeyPressed("hardDrop"), time);
+    this.chargeDAS("clockwise", me.input.isKeyPressed("clockwise"), time);
+    this.chargeDAS("anticlockwise", me.input.isKeyPressed("anticlockwise"), time);
 
     return true;
+  },
+
+  onDrop: function() {
+    if (!this.activeBlock) return;
+
+    this.activeBlock.deactive();
+    this.deactiveBlocks.push(this.activeBlock);
+    this.deactiveDots = this.getDeactiveDots();
+
+    // [TODO] clear line
+
+    this.spawnBlock();
   },
 
   onActivateEvent : function() {
     this._super(me.Container, "onActivateEvent",[]);
     var _this = this;
-    this.dropTimer = me.timer.setInterval(function() {
-      if (!_this.activeBlock.moveDown()) {
-        // [TODO] 비활성화 블럭 전환 대기 타이머 동작
+    this.dropTimer = me.timer.setInterval(() => {
+      if (this.activeBlock && !this.activeBlock.moveDown(this.deactiveDots)) {
+        this.onDrop();
       }
-
     }, 1000);
   },
 
@@ -103,3 +121,5 @@ game.PlayField = me.Container.extend({
 game.PlayField.BLOCK_SIZE = 20;
 game.PlayField.ROW_COUNT = 20;
 game.PlayField.COL_COUNT = 10;
+game.PlayField.DAS_INIT_MS = 183;
+game.PlayField.DAS_REPEAT_MS = 83;
