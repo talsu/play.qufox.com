@@ -16,7 +16,7 @@ game.PlayField = me.Container.extend({
 
   draw: function(renderer) {
     var color = renderer.getColor();
-    renderer.setColor('white');
+    renderer.setColor('#4e4e4e');
     renderer.fillRect(this.left, this.top, this.width, this.height);
     renderer.setColor(color);
 
@@ -56,15 +56,17 @@ game.PlayField = me.Container.extend({
     return this.deactiveBlocks.map(block => block.getDots()).reduce((a, b) => a.concat(b),[]);
   },
   onInput: function(direction, state) {
-    console.log({time:new Date().getTime(), direction:direction, state:state});
-
     if (!this.activeBlock) return;
 
     if (state == "press" || state == "hold") {
       switch (direction) {
         case "left": this.activeBlock.moveLeft(this.deactiveDots); break;
         case "right": this.activeBlock.moveRight(this.deactiveDots); break;
-        case "softDrop": this.activeBlock.moveDown(this.deactiveDots); break;
+        case "softDrop":
+          if (this.activeBlock.moveDown(this.deactiveDots)) {
+            this.restartAutoDropTimer();
+          }
+        break;
       }
     }
 
@@ -99,22 +101,37 @@ game.PlayField = me.Container.extend({
 
     // [TODO] clear line
 
+    // ARE
+
     this.spawnBlock();
+  },
+
+  startAutoDropTimer: function(interval) {
+    if (this.autoDropTimer) return;
+    this.autoDropTimer = me.timer.setInterval(() => {
+      if (this.activeBlock && !this.activeBlock.moveDown(this.deactiveDots)) {
+        this.onDrop();
+      }
+    }, interval || 1000);
+  },
+  stopAutoDropTimer: function() {
+    if (!this.autoDropTimer) return;
+    me.timer.clearInterval(this.autoDropTimer);
+    this.autoDropTimer = null;
+  },
+  restartAutoDropTimer: function(interval) {
+    this.stopAutoDropTimer();
+    this.startAutoDropTimer(interval);
   },
 
   onActivateEvent : function() {
     this._super(me.Container, "onActivateEvent",[]);
-    var _this = this;
-    this.dropTimer = me.timer.setInterval(() => {
-      if (this.activeBlock && !this.activeBlock.moveDown(this.deactiveDots)) {
-        this.onDrop();
-      }
-    }, 1000);
+    this.startAutoDropTimer();
   },
 
   onDeactivateEvent : function() {
     this._super(me.Container, "onDeactivateEvent",[]);
-    me.timer.clearInterval(this.timer);
+    this.stopAutoDropTimer();
   }
 });
 

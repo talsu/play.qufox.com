@@ -48,6 +48,7 @@ game.Block = me.Entity.extend({
   },
 
   draw : function (renderer) {
+      renderer.globalAlpha(0.5);
       let color = renderer.getColor();
       renderer.setColor(this.isDeactive?"grey":game.Block.COLOR[this.blockType]);
       this.getDotOffsets().forEach(function(colRow) {
@@ -156,13 +157,13 @@ game.Block.DOTS = {
 game.Block.ROTATE_SEQ = ['0', 'R', '2', 'L'];
 
 game.Block.COLOR = {
-  I:"cyan",
-  J:"blue",
-  L:"orange",
-  T:"purple",
-  O:"yellow",
-  Z:"red",
-  S:"green"
+  I:"#1cd6ff",
+  J:"#126fc4",
+  L:"#df9a00",
+  T:"#9826c7",
+  O:"#ede40b",
+  Z:"#c92323",
+  S:"#26a723"
 };
 
 game.Block.I_KICK_DATA = {
