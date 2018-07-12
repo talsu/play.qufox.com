@@ -8,7 +8,7 @@ game.PlayField = me.Container.extend({
       game.PlayField.COL_COUNT * game.PlayField.BLOCK_SIZE,
       game.PlayField.ROW_COUNT * game.PlayField.BLOCK_SIZE
     ]);
-    this.activeBlock = me.pool.pull("block", 0, 0);
+    this.activeBlock = me.pool.pull("block", "I");
     this.addChild(this.activeBlock);
 
     // this.addChild(new (me.Renderable.extend({
