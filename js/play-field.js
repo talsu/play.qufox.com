@@ -4,8 +4,14 @@ game.PlayField = me.Container.extend({
       game.PlayField.COL_COUNT * game.PlayField.BLOCK_SIZE,
       game.PlayField.ROW_COUNT * game.PlayField.BLOCK_SIZE
     ]);
+
+    this.start();
+  },
+
+  start: function() {
     this.activeTetromino = null;
     this.deactiveTetrominos = [];
+    this.randomBag = [];
     this.spawnTetromino();
   },
 
@@ -29,8 +35,15 @@ game.PlayField = me.Container.extend({
 
   spawnTetromino: function() {
     let tetrominotype = this.randomTypeGenerator();
-    this.activeTetromino = me.pool.pull("tetromino", tetrominotype, this.getDeactiveDots());
-    this.addChild(this.activeTetromino);
+    let tetromino = me.pool.pull("tetromino", tetrominotype, this.getDeactiveDots());
+    if (tetromino.isSpwanSuccess) {
+      this.activeTetromino = tetromino;
+      this.addChild(this.activeTetromino);
+    } else {
+      console.log('Game Over');
+      this.forEach(child => this.removeChild(child));
+      this.start();
+    }
   },
 
   /*
@@ -106,6 +119,7 @@ game.PlayField = me.Container.extend({
 
     this.activeTetromino.deactive();
     this.deactiveTetrominos.push(this.activeTetromino);
+    this.activeTetromino = null;
 
     // [TODO] clear line
 

@@ -10,20 +10,11 @@ game.Tetromino = me.Entity.extend({
     let initRow = row || 0;
 
     this.ghostRowOffset = 0;
-
-    this.blockedPositions = []; // draw without blocked position first
     this.blockedPositions = blockedPositions;
-
-    this.move(initCol, initRow);
-    if (!this.isValidPosition(this.rotateType, initCol, initRow)) {
-      // Game over
-      console.log("Game Over");
-    }
+    this.isSpwanSuccess = this.move(initCol, initRow);
   },
 
   draw: function (renderer) {
-      // this.currentTransform.rotate(0.025);
-      // renderer.globalAlpha(0.5);
       let color = renderer.getColor();
       renderer.setColor(this.isDeactive?"grey":game.Tetromino.COLOR[this.type]);
       this.getDotOffsets().forEach(colRow => {
