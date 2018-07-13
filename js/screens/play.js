@@ -16,9 +16,8 @@ game.PlayScreen = me.ScreenObject.extend({
 
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
-    me.input.bindKey(me.input.KEY.A, "left");
-    me.input.bindKey(me.input.KEY.D, "right");
-    me.input.bindKey(me.input.KEY.UP, "hardDrop");
+    me.input.bindKey(me.input.KEY.CTRL, "anticlockwise");
+    me.input.bindKey(me.input.KEY.UP, "clockwise");
     me.input.bindKey(me.input.KEY.SPACE, "hardDrop");
     me.input.bindKey(me.input.KEY.DOWN, "softDrop");
     me.input.bindKey(me.input.KEY.Z, "anticlockwise");
@@ -32,8 +31,7 @@ game.PlayScreen = me.ScreenObject.extend({
 
     me.input.unbindKey(me.input.KEY.LEFT);
     me.input.unbindKey(me.input.KEY.RIGHT);
-    me.input.unbindKey(me.input.KEY.A);
-    me.input.unbindKey(me.input.KEY.D);
+    me.input.unbindKey(me.input.KEY.CTRL);
     me.input.unbindKey(me.input.KEY.UP);
     me.input.unbindKey(me.input.KEY.SPACE);
     me.input.unbindKey(me.input.KEY.DOWN);

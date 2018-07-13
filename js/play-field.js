@@ -18,12 +18,24 @@ game.PlayField = me.Container.extend({
     this._super(me.Container, "draw", [renderer]);
   },
 
+  /*
+    https://tetris.wiki/Random_Generator
+  */
+  randomTypeGenerator: function() {
+    if (!this.randomBag) this.randomBag = [];
+    if (!this.randomBag.length) this.randomBag = game.Tetromino.TYPES.slice();
+    return this.randomBag.splice(Math.floor(Math.random()*this.randomBag.length), 1)[0]
+  },
+
   spawnTetromino: function() {
-    let tetrominotype = game.Tetromino.TYPES[Math.floor(Math.random()*game.Tetromino.TYPES.length)];
+    let tetrominotype = this.randomTypeGenerator();
     this.activeTetromino = me.pool.pull("tetromino", tetrominotype, this.getDeactiveDots());
     this.addChild(this.activeTetromino);
   },
 
+  /*
+    https://tetris.wiki/DAS
+  */
   chargeDAS: function(direction, isPressed, time) {
     if (!this.dasFlags) this.dasFlags = {};
     if (!this.dasFlags[direction]) this.dasFlags[direction] = 0;

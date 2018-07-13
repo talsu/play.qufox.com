@@ -8,10 +8,13 @@ game.Tetromino = me.Entity.extend({
 
     let initCol = col === undefined ? 3 : col;
     let initRow = row || 0;
-    
+
+    this.ghostRowOffset = 0;
+
     this.blockedPositions = []; // draw without blocked position first
-    this.move(initCol, initRow);
     this.blockedPositions = blockedPositions;
+
+    this.move(initCol, initRow);
     if (!this.isValidPosition(this.rotateType, initCol, initRow)) {
       // Game over
       console.log("Game Over");
@@ -22,7 +25,6 @@ game.Tetromino = me.Entity.extend({
       // this.currentTransform.rotate(0.025);
       // renderer.globalAlpha(0.5);
       let color = renderer.getColor();
-      // renderer.setGlobalAlpha(0.5);
       renderer.setColor(this.isDeactive?"grey":game.Tetromino.COLOR[this.type]);
       this.getDotOffsets().forEach(colRow => {
         renderer.fillRect(
@@ -32,8 +34,16 @@ game.Tetromino = me.Entity.extend({
           game.PlayField.BLOCK_SIZE);
       });
 
-      if (game.Tetromino.SHOW_GHOST) {
-        // Draw ghost tetromino
+      // Draw ghost tetromino
+      if (!this.isDeactive && game.Tetromino.SHOW_GHOST && this.ghostRowOffset) {
+        renderer.setGlobalAlpha(0.3);
+        this.getDotOffsets().forEach(colRow => {
+          renderer.fillRect(
+            colRow[0] * game.PlayField.BLOCK_SIZE,
+            (colRow[1] + this.ghostRowOffset) * game.PlayField.BLOCK_SIZE,
+            game.PlayField.BLOCK_SIZE,
+            game.PlayField.BLOCK_SIZE);
+        });
       }
 
       renderer.setColor(color);
@@ -53,6 +63,21 @@ game.Tetromino = me.Entity.extend({
     });
   },
 
+  getGhostRowOffset: function() {
+    let row = this.row;
+    while (this.isValidPosition(this.rotateType, this.col, row)) { row++; }
+    let offset = row - this.row - 1;
+    let minOffset = null;
+    if (this.rotateType == 'R' || this.rotateType == 'L'){
+      minOffset = 3;
+      if (this.type == 'I') minOffset = 4;
+    } else {
+      minOffset = 2;
+      if (this.type == 'I') minOffset = 1;
+    }
+    return offset < minOffset ? 0 : offset;
+  },
+
   isValidPosition: function(rotateType, col, row) {
     return this.getDots(rotateType, col, row).every(colRow => {
       let newCol = colRow[0];
@@ -64,6 +89,9 @@ game.Tetromino = me.Entity.extend({
     });
   },
 
+  /*
+    https://tetris.wiki/SRS
+  */
   rotate: function (isClockwise) {
     let index = game.Tetromino.ROTATE_SEQ.indexOf(this.rotateType);
     index += isClockwise ? 1 : -1;
@@ -95,6 +123,8 @@ game.Tetromino = me.Entity.extend({
     this.col = col;
     this.pos.x = this.col * game.PlayField.BLOCK_SIZE;
     this.pos.y = this.row * game.PlayField.BLOCK_SIZE;
+
+    this.ghostRowOffset = this.getGhostRowOffset();
 
     return true;
   },
