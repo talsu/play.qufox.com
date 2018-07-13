@@ -49,7 +49,7 @@ game.PlayField = me.Container.extend({
   /*
     https://tetris.wiki/DAS
   */
-  chargeDAS: function(direction, isPressed, time) {
+  chargeDAS: function(direction, isPressed, time, init, repeat) {
     if (!this.dasFlags) this.dasFlags = {};
     if (!this.dasFlags[direction]) this.dasFlags[direction] = 0;
     let oldValue = this.dasFlags[direction];
@@ -62,8 +62,10 @@ game.PlayField = me.Container.extend({
 
     if (newValue == 0) return;
 
-    let rOld = Math.floor((oldValue - game.PlayField.DAS_INIT_MS) / game.PlayField.DAS_REPEAT_MS);
-    let rNew = Math.floor((newValue - game.PlayField.DAS_INIT_MS) / game.PlayField.DAS_REPEAT_MS);
+    let initDelay = init || game.PlayField.DAS_INIT_MS;
+    let repeatDelay = repeat || game.PlayField.DAS_REPEAT_MS;
+    let rOld = Math.floor((oldValue - initDelay) / repeatDelay);
+    let rNew = Math.floor((newValue - initDelay) / repeatDelay);
 
     if (rNew >= 0 && rOld < rNew) {
       if (rOld < 0) rOld = -1;
@@ -106,7 +108,7 @@ game.PlayField = me.Container.extend({
 
     this.chargeDAS("left", me.input.isKeyPressed("left"), time);
     this.chargeDAS("right", me.input.isKeyPressed("right"), time);
-    this.chargeDAS("softDrop", me.input.isKeyPressed("softDrop"), time);
+    this.chargeDAS("softDrop", me.input.isKeyPressed("softDrop"), time, game.PlayField.SOFTDROP_REPEAT_MS, game.PlayField.SOFTDROP_REPEAT_MS);
     this.chargeDAS("hardDrop", me.input.isKeyPressed("hardDrop"), time);
     this.chargeDAS("clockwise", me.input.isKeyPressed("clockwise"), time);
     this.chargeDAS("anticlockwise", me.input.isKeyPressed("anticlockwise"), time);
@@ -164,3 +166,4 @@ game.PlayField.ROW_COUNT = 20;
 game.PlayField.COL_COUNT = 10;
 game.PlayField.DAS_INIT_MS = 183;
 game.PlayField.DAS_REPEAT_MS = 83;
+game.PlayField.SOFTDROP_REPEAT_MS = 40;
