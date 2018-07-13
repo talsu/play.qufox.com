@@ -30,7 +30,7 @@ var game = {
   // Run on game resources loaded.
   "loaded": function() {
     me.pool.register("playField", game.PlayField);
-    me.pool.register("block", game.Block);
+    me.pool.register("tetromino", game.Tetromino);
 
     me.state.set(me.state.MENU, new game.TitleScreen());
     me.state.set(me.state.PLAY, new game.PlayScreen());

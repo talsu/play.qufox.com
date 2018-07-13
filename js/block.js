@@ -1,21 +1,51 @@
-game.Block = me.Entity.extend({
-  init : function (blockType, col, row) {
-    this._super(me.Entity, "init", [0, 0, { width: 60, height: 60 }]);
 
-    this.blockType = blockType;
+game.Tetromino = me.Entity.extend({
+  init : function (type, blockedPositions, col, row) {
+    this._super(me.Entity, "init", [0, 0, { width: game.PlayField.BLOCK_SIZE * 4, height: game.PlayField.BLOCK_SIZE * 4 }]);
+
+    this.type = type;
     this.rotateType = '0';
-    // default position col:3, row:0
+
     let initCol = col === undefined ? 3 : col;
     let initRow = row || 0;
-
+    
+    this.blockedPositions = []; // draw without blocked position first
     this.move(initCol, initRow);
+    this.blockedPositions = blockedPositions;
+    if (!this.isValidPosition(this.rotateType, initCol, initRow)) {
+      // Game over
+      console.log("Game Over");
+    }
   },
 
-  getDotOffsets(rotateType) {
-    return game.Block.DOTS[this.blockType][rotateType || this.rotateType];
+  draw: function (renderer) {
+      // this.currentTransform.rotate(0.025);
+      // renderer.globalAlpha(0.5);
+      let color = renderer.getColor();
+      // renderer.setGlobalAlpha(0.5);
+      renderer.setColor(this.isDeactive?"grey":game.Tetromino.COLOR[this.type]);
+      this.getDotOffsets().forEach(colRow => {
+        renderer.fillRect(
+          colRow[0] * game.PlayField.BLOCK_SIZE,
+          colRow[1] * game.PlayField.BLOCK_SIZE,
+          game.PlayField.BLOCK_SIZE,
+          game.PlayField.BLOCK_SIZE);
+      });
+
+      if (game.Tetromino.SHOW_GHOST) {
+        // Draw ghost tetromino
+      }
+
+      renderer.setColor(color);
+
+      this._super(me.Entity, "draw", [renderer]);
   },
 
-  getDots(rotateType, col, row) {
+  getDotOffsets: function (rotateType) {
+    return game.Tetromino.DOTS[this.type][rotateType || this.rotateType];
+  },
+
+  getDots: function (rotateType, col, row) {
     let colBase = (col === undefined) ? this.col : col;
     let rowBase = (row === undefined) ? this.row : row;
     return this.getDotOffsets(rotateType).map(colRow => {
@@ -23,23 +53,34 @@ game.Block = me.Entity.extend({
     });
   },
 
-  rotate(isClockwise, dots) {
-    let index = game.Block.ROTATE_SEQ.indexOf(this.rotateType);
+  isValidPosition: function(rotateType, col, row) {
+    return this.getDots(rotateType, col, row).every(colRow => {
+      let newCol = colRow[0];
+      let newRow = colRow[1];
+      if (this.blockedPositions.some(colRow => colRow[0] === newCol && colRow[1] === newRow)) return false;
+      if (newCol < 0 || game.PlayField.COL_COUNT <= newCol) return false;
+      if (newRow < 0 || game.PlayField.ROW_COUNT <= newRow) return false;
+      return true;
+    });
+  },
+
+  rotate: function (isClockwise) {
+    let index = game.Tetromino.ROTATE_SEQ.indexOf(this.rotateType);
     index += isClockwise ? 1 : -1;
-    index = (game.Block.ROTATE_SEQ.length + index) % game.Block.ROTATE_SEQ.length;
-    let newRotateType = game.Block.ROTATE_SEQ[index];
+    index = (game.Tetromino.ROTATE_SEQ.length + index) % game.Tetromino.ROTATE_SEQ.length;
+    let newRotateType = game.Tetromino.ROTATE_SEQ[index];
 
     let offsets = null;
-    switch (this.blockType) {
+    switch (this.type) {
       case "O": offsets = []; break;
-      case "I": offsets = game.Block.I_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
-      default: offsets = game.Block.JLSTZ_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
+      case "I": offsets = game.Tetromino.I_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
+      default: offsets = game.Tetromino.JLSTZ_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
     }
 
     return offsets.some(colRow => {
       let newCol = this.col + colRow[0];
       let newRow = this.row - colRow[1]; // kickData Y is opposite Row.
-      if (this.isValidPosition(newRotateType, newCol, newRow, dots)) {
+      if (this.isValidPosition(newRotateType, newCol, newRow)) {
         this.rotateType = newRotateType;
         this.move(newCol, newRow);
         return true;
@@ -47,60 +88,26 @@ game.Block = me.Entity.extend({
     });
   },
 
-  draw : function (renderer) {
-      renderer.globalAlpha(0.5);
-      let color = renderer.getColor();
-      renderer.setColor(this.isDeactive?"grey":game.Block.COLOR[this.blockType]);
-      this.getDotOffsets().forEach(function(colRow) {
-        renderer.fillRect(
-          colRow[0] * game.PlayField.BLOCK_SIZE,
-          colRow[1] * game.PlayField.BLOCK_SIZE,
-          game.PlayField.BLOCK_SIZE,
-          game.PlayField.BLOCK_SIZE);
-      });
-      renderer.setColor(color);
-
-  },
-
-  isValidPosition: function(rotateType, col, row, blockedDots) {
-
-    return this.getDots(rotateType, col, row).every(colRow => {
-      let newCol = colRow[0];
-      let newRow = colRow[1];
-      if (blockedDots && blockedDots.some(dot => dot[0] === newCol && dot[1] === newRow)) return false;
-      if (newCol < 0 || game.PlayField.COL_COUNT <= newCol) return false;
-      if (newRow < 0 || game.PlayField.ROW_COUNT <= newRow) return false;
-      return true;
-    });
-
-    // return this.getDotOffsets(rotateType).every(colRow => {
-    //   let newCol = col + colRow[0];
-    //   let newRow = row + colRow[1];
-    //   if (blockedDots && blockedDots.some(dot => dot[0] === newCol && dot[1] === newRow)) return false;
-    //   if (newCol < 0 || game.PlayField.COL_COUNT <= newCol) return false;
-    //   if (newRow < 0 || game.PlayField.ROW_COUNT <= newRow) return false;
-    //   return true;
-    // });
-  },
-
-  move: function(col, row, dots) {
-    if (!this.isValidPosition(this.rotateType, col, row, dots)) return false;
+  move: function(col, row) {
+    if (!this.isValidPosition(this.rotateType, col, row)) return false;
 
     this.row = row;
     this.col = col;
-
     this.pos.x = this.col * game.PlayField.BLOCK_SIZE;
     this.pos.y = this.row * game.PlayField.BLOCK_SIZE;
 
     return true;
   },
 
-  moveLeft: function(dots) { return this.move(this.col - 1, this.row, dots); },
-  moveRight: function(dots) { return this.move(this.col + 1, this.row, dots); },
-  moveUp: function(dots) { return this.move(this.col, this.row - 1, dots); },
-  moveDown: function(dots) { return this.move(this.col, this.row + 1, dots); },
+  moveLeft: function() { return this.move(this.col - 1, this.row); },
 
-  hardDrop: function(dots) { while (this.moveDown(dots)) {} },
+  moveRight: function() { return this.move(this.col + 1, this.row); },
+
+  moveUp: function() { return this.move(this.col, this.row - 1); },
+
+  moveDown: function() { return this.move(this.col, this.row + 1); },
+
+  hardDrop: function() { while (this.moveDown()) {} },
 
   deactive: function() {
     this.isDeactive = true;
@@ -108,8 +115,11 @@ game.Block = me.Entity.extend({
 
 });
 
-game.Block.TYPES = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
-game.Block.DOTS = {
+game.Tetromino.SHOW_GHOST = true;
+
+game.Tetromino.TYPES = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
+
+game.Tetromino.DOTS = {
   I: {
     0:[[0,1],[1,1],[2,1],[3,1]],
     R:[[2,0],[2,1],[2,2],[2,3]],
@@ -154,9 +164,9 @@ game.Block.DOTS = {
   }
 };
 
-game.Block.ROTATE_SEQ = ['0', 'R', '2', 'L'];
+game.Tetromino.ROTATE_SEQ = ['0', 'R', '2', 'L'];
 
-game.Block.COLOR = {
+game.Tetromino.COLOR = {
   I:"#1cd6ff",
   J:"#126fc4",
   L:"#df9a00",
@@ -166,7 +176,7 @@ game.Block.COLOR = {
   S:"#26a723"
 };
 
-game.Block.I_KICK_DATA = {
+game.Tetromino.I_KICK_DATA = {
   "0>R": [[0,0], [-2,0], [+1,0], [-2,-1], [+1,+2]],
   "R>0": [[0,0], [+2,0], [-1,0], [+2,+1], [-1,-2]],
   "R>2": [[0,0], [-1,0], [+2,0], [-1,+2], [+2,-1]],
@@ -177,7 +187,7 @@ game.Block.I_KICK_DATA = {
   "0>L": [[0,0], [-1,0], [+2,0], [-1,+2], [+2,-1]]
 };
 
-game.Block.JLSTZ_KICK_DATA = {
+game.Tetromino.JLSTZ_KICK_DATA = {
   "0>R": [[ 0, 0], [-1, 0], [-1,+1], [ 0,-2], [-1,-2]],
   "R>0": [[ 0, 0], [+1, 0], [+1,-1], [ 0,+2], [+1,+2]],
   "R>2": [[ 0, 0], [+1, 0], [+1,-1], [ 0,+2], [+1,+2]],
@@ -187,3 +197,14 @@ game.Block.JLSTZ_KICK_DATA = {
   "L>0": [[ 0, 0], [-1, 0], [-1,-1], [ 0,+2], [-1,+2]],
   "0>L": [[ 0, 0], [+1, 0], [+1,+1], [ 0,-2], [+1,-2]]
 };
+
+game.Tetromino.I_ARIKA_KICK_DATA = {
+  "0->R":[[ 0, 0], [-2, 0], [+1, 0], [+1,+2], [-2,-1]],
+  "0->L":[[ 0, 0], [+2, 0], [-1, 0], [-1,+2], [+2,-1]],
+  "2->R":[[ 0, 0], [-2, 0], [+1, 0], [-2,+1], [+1,-1]],
+  "2->L":[[ 0, 0], [+2, 0], [-1, 0], [+2,+1], [-1,-1]],
+  "R->0":[[ 0, 0], [+2, 0], [-1, 0], [+2,+1], [-1,-2]],
+  "L->0":[[ 0, 0], [-2, 0], [+1, 0], [-2,+1], [+1,-2]],
+  "R->2":[[ 0, 0], [-1, 0], [+2, 0], [-1,+2], [+2,-1]],
+  "L->2":[[ 0, 0], [+1, 0], [-2, 0], [+1,+2], [-2,-1]]
+}

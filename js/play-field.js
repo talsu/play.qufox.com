@@ -1,21 +1,16 @@
 game.PlayField = me.Container.extend({
   init: function(x, y) {
-
-    var blockSize = 20;
-    var rowCount = 20;
-    var colCount = 10;
     this._super(me.Container, "init", [x, y,
       game.PlayField.COL_COUNT * game.PlayField.BLOCK_SIZE,
       game.PlayField.ROW_COUNT * game.PlayField.BLOCK_SIZE
     ]);
-    this.activeBlock = null;
-    this.deactiveBlocks = [];
-    this.deactiveDots = [];
-    this.spawnBlock();
+    this.activeTetromino = null;
+    this.deactiveTetrominos = [];
+    this.spawnTetromino();
   },
 
   draw: function(renderer) {
-    var color = renderer.getColor();
+    let color = renderer.getColor();
     renderer.setColor('#4e4e4e');
     renderer.fillRect(this.left, this.top, this.width, this.height);
     renderer.setColor(color);
@@ -23,10 +18,10 @@ game.PlayField = me.Container.extend({
     this._super(me.Container, "draw", [renderer]);
   },
 
-  spawnBlock: function() {
-    let blockType = game.Block.TYPES[Math.floor(Math.random()*game.Block.TYPES.length)];
-    this.activeBlock = me.pool.pull("block", blockType);
-    this.addChild(this.activeBlock);
+  spawnTetromino: function() {
+    let tetrominotype = game.Tetromino.TYPES[Math.floor(Math.random()*game.Tetromino.TYPES.length)];
+    this.activeTetromino = me.pool.pull("tetromino", tetrominotype, this.getDeactiveDots());
+    this.addChild(this.activeTetromino);
   },
 
   chargeDAS: function(direction, isPressed, time) {
@@ -52,18 +47,20 @@ game.PlayField = me.Container.extend({
       }
     }
   },
+
   getDeactiveDots: function() {
-    return this.deactiveBlocks.map(block => block.getDots()).reduce((a, b) => a.concat(b),[]);
+    return this.deactiveTetrominos.map(tetromino => tetromino.getDots()).reduce((a, b) => a.concat(b),[]);
   },
+
   onInput: function(direction, state) {
-    if (!this.activeBlock) return;
+    if (!this.activeTetromino) return;
 
     if (state == "press" || state == "hold") {
       switch (direction) {
-        case "left": this.activeBlock.moveLeft(this.deactiveDots); break;
-        case "right": this.activeBlock.moveRight(this.deactiveDots); break;
+        case "left": this.activeTetromino.moveLeft(); break;
+        case "right": this.activeTetromino.moveRight(); break;
         case "softDrop":
-          if (this.activeBlock.moveDown(this.deactiveDots)) {
+          if (this.activeTetromino.moveDown()) {
             this.restartAutoDropTimer();
           }
         break;
@@ -72,9 +69,9 @@ game.PlayField = me.Container.extend({
 
     if (state == "press") {
       switch (direction) {
-        case "clockwise": this.activeBlock.rotate(true, this.deactiveDots); break;
-        case "anticlockwise": this.activeBlock.rotate(false, this.deactiveDots); break;
-        case "hardDrop": this.activeBlock.hardDrop(this.deactiveDots); this.onDrop(); break;
+        case "clockwise": this.activeTetromino.rotate(true); break;
+        case "anticlockwise": this.activeTetromino.rotate(false); break;
+        case "hardDrop": this.activeTetromino.hardDrop(); this.onDrop(); break;
       }
     }
   },
@@ -93,32 +90,33 @@ game.PlayField = me.Container.extend({
   },
 
   onDrop: function() {
-    if (!this.activeBlock) return;
+    if (!this.activeTetromino) return;
 
-    this.activeBlock.deactive();
-    this.deactiveBlocks.push(this.activeBlock);
-    this.deactiveDots = this.getDeactiveDots();
+    this.activeTetromino.deactive();
+    this.deactiveTetrominos.push(this.activeTetromino);
 
     // [TODO] clear line
 
     // ARE
 
-    this.spawnBlock();
+    this.spawnTetromino();
   },
 
   startAutoDropTimer: function(interval) {
     if (this.autoDropTimer) return;
     this.autoDropTimer = me.timer.setInterval(() => {
-      if (this.activeBlock && !this.activeBlock.moveDown(this.deactiveDots)) {
+      if (this.activeTetromino && !this.activeTetromino.moveDown()) {
         this.onDrop();
       }
     }, interval || 1000);
   },
+
   stopAutoDropTimer: function() {
     if (!this.autoDropTimer) return;
     me.timer.clearInterval(this.autoDropTimer);
     this.autoDropTimer = null;
   },
+
   restartAutoDropTimer: function(interval) {
     this.stopAutoDropTimer();
     this.startAutoDropTimer(interval);
