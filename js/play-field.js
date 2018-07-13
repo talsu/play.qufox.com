@@ -116,14 +116,40 @@ game.PlayField = me.Container.extend({
     return true;
   },
 
+  clearLine: function(droppedTetromino) {
+    // get rows for check clear line.
+    let clearCheckRows = droppedTetromino.getDots()
+      .map(colRow => colRow[1])
+      .reduce((result, row) => {result[row] = 1; return result;}, {});
+
+    let needClearRows = [];
+    let deactiveDots = this.getDeactiveDots();
+    // get target of clear line rows.
+    for (let key in clearCheckRows) {
+      let row = Number(key);
+      let numberOfRowDots = deactiveDots.filter(colRow => colRow[1] == row).length;
+      if (numberOfRowDots >= game.PlayField.COL_COUNT) needClearRows.push(row);
+    }
+
+    // call clear line method each tetromino.
+    needClearRows.forEach(row => {
+      let emptyTetrominos = this.deactiveTetrominos.filter(tetromino => tetromino.clearLine(row));
+      // remove empty tetromino.
+      emptyTetrominos.forEach(tetromino => this.removeChild(tetromino));
+      emptyTetrominos.forEach(tetromino => this.deactiveTetrominos.remove(tetromino));
+    });
+
+  },
+
   onDrop: function() {
     if (!this.activeTetromino) return;
-
-    this.activeTetromino.deactive();
-    this.deactiveTetrominos.push(this.activeTetromino);
+    let droppedTetromino = this.activeTetromino;
+    droppedTetromino.deactive();
+    this.deactiveTetrominos.push(droppedTetromino);
     this.activeTetromino = null;
 
-    // [TODO] clear line
+    // clear line
+    this.clearLine(droppedTetromino);
 
     // ARE
 

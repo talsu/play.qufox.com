@@ -12,11 +12,12 @@ game.Tetromino = me.Entity.extend({
     this.ghostRowOffset = 0;
     this.blockedPositions = blockedPositions;
     this.isSpwanSuccess = this.move(initCol, initRow);
+    this.deactiveDots = null;
   },
 
   draw: function (renderer) {
       let color = renderer.getColor();
-      renderer.setColor(this.isDeactive?"grey":game.Tetromino.COLOR[this.type]);
+      renderer.setColor(this.deactiveDots?"grey":game.Tetromino.COLOR[this.type]);
       this.getDotOffsets().forEach(colRow => {
         renderer.fillRect(
           colRow[0] * game.PlayField.BLOCK_SIZE,
@@ -26,7 +27,7 @@ game.Tetromino = me.Entity.extend({
       });
 
       // Draw ghost tetromino
-      if (!this.isDeactive && game.Tetromino.SHOW_GHOST && this.ghostRowOffset) {
+      if (!this.deactiveDots && game.Tetromino.SHOW_GHOST && this.ghostRowOffset) {
         renderer.setGlobalAlpha(0.3);
         this.getDotOffsets().forEach(colRow => {
           renderer.fillRect(
@@ -43,7 +44,7 @@ game.Tetromino = me.Entity.extend({
   },
 
   getDotOffsets: function (rotateType) {
-    return game.Tetromino.DOTS[this.type][rotateType || this.rotateType];
+    return this.deactiveDots || game.Tetromino.DOTS[this.type][rotateType || this.rotateType];
   },
 
   getDots: function (rotateType, col, row) {
@@ -130,8 +131,21 @@ game.Tetromino = me.Entity.extend({
 
   hardDrop: function() { while (this.moveDown()) {} },
 
+  clearLine: function(row) {
+    // remove row dots.
+    this.deactiveDots
+      .filter(colRow => row == (this.row + colRow[1]))
+      .forEach(colRow => this.deactiveDots.remove(colRow));
+    // pull down upper dots.
+    this.deactiveDots
+      .filter(colRow => row > (this.row + colRow[1]))
+      .forEach(colRow => colRow[1] = colRow[1] + 1);
+    // if Tetromino is empty return true;
+    return !this.deactiveDots.length;
+  },
+
   deactive: function() {
-    this.isDeactive = true;
+    this.deactiveDots = this.getDotOffsets().map(colRow => colRow.slice());
   },
 
 });
