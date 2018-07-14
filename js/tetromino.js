@@ -18,6 +18,8 @@ game.Tetromino = me.Entity.extend({
   draw: function (renderer) {
       let color = renderer.getColor();
       renderer.setColor(this.deactiveDots?"grey":game.Tetromino.COLOR[this.type]);
+      renderer.setColor(game.Tetromino.COLOR[this.type]);
+
       this.getDotOffsets().forEach(colRow => {
         renderer.fillRect(
           colRow[0] * game.PlayField.BLOCK_SIZE,

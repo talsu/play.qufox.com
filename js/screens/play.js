@@ -3,7 +3,7 @@ game.PlayScreen = me.ScreenObject.extend({
    *  action to perform on state change
    */
   onResetEvent: function() {
-    me.game.world.addChild(new me.ColorLayer("background", "#000000"), 0);
+    me.game.world.addChild(new me.ColorLayer("background", "#ffffff"), 0);
 
     // reset the score
     game.data.score = 0;
@@ -12,7 +12,16 @@ game.PlayScreen = me.ScreenObject.extend({
     // Can also be forced by specifying a "Infinity" z value to the addChild function.
     this.HUD = new game.HUD.Container();
     me.game.world.addChild(this.HUD);
-    me.game.world.addChild(me.pool.pull("playField", 500, 250));
+
+    let size = game.PlayField.BLOCK_SIZE;
+
+    let holdBox = me.pool.pull("holdTetrominoBox", size, size, 6 * size, 4 * size);
+    me.game.world.addChild(holdBox);
+
+    let playFieldWidth = game.PlayField.COL_COUNT * size;
+    let playFieldHeight = game.PlayField.ROW_COUNT * size
+
+    me.game.world.addChild(me.pool.pull("playField", holdBox.width + (2*size), size, playFieldWidth, playFieldHeight, holdBox));
 
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -22,6 +31,7 @@ game.PlayScreen = me.ScreenObject.extend({
     me.input.bindKey(me.input.KEY.DOWN, "softDrop");
     me.input.bindKey(me.input.KEY.Z, "anticlockwise");
     me.input.bindKey(me.input.KEY.X, "clockwise");
+    me.input.bindKey(me.input.KEY.C, "hold");
   },
 
   /**
@@ -37,6 +47,7 @@ game.PlayScreen = me.ScreenObject.extend({
     me.input.unbindKey(me.input.KEY.DOWN);
     me.input.unbindKey(me.input.KEY.Z);
     me.input.unbindKey(me.input.KEY.X);
+    me.input.unbindKey(me.input.KEY.C);
 
     // remove the HUD from the game world
     me.game.world.removeChild(this.HUD);

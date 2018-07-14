@@ -1,10 +1,7 @@
 game.PlayField = me.Container.extend({
-  init: function(x, y) {
-    this._super(me.Container, "init", [x, y,
-      game.PlayField.COL_COUNT * game.PlayField.BLOCK_SIZE,
-      game.PlayField.ROW_COUNT * game.PlayField.BLOCK_SIZE
-    ]);
-
+  init: function(x, y, width, height, holdBox) {
+    this._super(me.Container, "init", [width/2 + x, height/2 + y, width, height]);
+    this.holdBox = holdBox;
     this.start();
   },
 
@@ -18,7 +15,7 @@ game.PlayField = me.Container.extend({
 
   draw: function(renderer) {
     let color = renderer.getColor();
-    renderer.setColor('#4e4e4e');
+    renderer.setColor('#000000');
     renderer.fillRect(this.left, this.top, this.width, this.height);
     renderer.setColor(color);
 
@@ -34,8 +31,8 @@ game.PlayField = me.Container.extend({
     return this.randomBag.splice(Math.floor(Math.random()*this.randomBag.length), 1)[0]
   },
 
-  spawnTetromino: function() {
-    let tetrominotype = this.randomTypeGenerator();
+  spawnTetromino: function(type) {
+    let tetrominotype = type || this.randomTypeGenerator();
     let tetromino = me.pool.pull("tetromino", tetrominotype, this.getDeactiveDots());
     if (tetromino.isSpwanSuccess) {
       this.activeTetromino = tetromino;
@@ -45,6 +42,7 @@ game.PlayField = me.Container.extend({
       this.forEach(child => this.removeChild(child));
       this.start();
     }
+    this.canHold = true;
   },
 
   /*
@@ -63,8 +61,8 @@ game.PlayField = me.Container.extend({
 
     if (newValue == 0) return;
 
-    let initDelay = init || game.PlayField.DAS_INIT_MS;
-    let repeatDelay = repeat || game.PlayField.DAS_REPEAT_MS;
+    let initDelay = init || game.PlayField.DAS_MS;
+    let repeatDelay = repeat || game.PlayField.AR_MS;
     let rOld = Math.floor((oldValue - initDelay) / repeatDelay);
     let rNew = Math.floor((newValue - initDelay) / repeatDelay);
 
@@ -121,6 +119,20 @@ game.PlayField = me.Container.extend({
         case "hardDrop":
           this.activeTetromino.hardDrop();
           this.lock();
+          // [TODO] hard Drop effect animation
+          break;
+        case "hold":
+          if (this.canHold && this.activeTetromino) {
+            console.log("hold");
+            let unholded = this.holdBox.hold(this.activeTetromino.type);
+
+            this.removeChild(this.activeTetromino);
+            this.activeTetromino = null;
+            this.spawnTetromino(unholded);
+            this.restartAutoDropTimer();
+
+            this.canHold = false;
+          }
           break;
       }
     }
@@ -135,6 +147,8 @@ game.PlayField = me.Container.extend({
     this.chargeDAS("hardDrop", me.input.isKeyPressed("hardDrop"), time);
     this.chargeDAS("clockwise", me.input.isKeyPressed("clockwise"), time);
     this.chargeDAS("anticlockwise", me.input.isKeyPressed("anticlockwise"), time);
+    this.chargeDAS("hold", me.input.isKeyPressed("hold"), time);
+
 
     return true;
   },
@@ -174,7 +188,7 @@ game.PlayField = me.Container.extend({
     this.deactiveTetrominos.push(droppedTetromino);
     this.activeTetromino = null;
 
-    // clear line
+    // clear line [TODO] clear line dealay and animation
     this.clearLine(droppedTetromino);
 
     // ARE
@@ -235,8 +249,8 @@ game.PlayField = me.Container.extend({
 game.PlayField.BLOCK_SIZE = 20;
 game.PlayField.ROW_COUNT = 20;
 game.PlayField.COL_COUNT = 10;
-game.PlayField.DAS_INIT_MS = 183;
-game.PlayField.DAS_REPEAT_MS = 83;
+game.PlayField.DAS_MS = 267; // tetris friends : 267, 183, 150, 133, 117
+game.PlayField.AR_MS = 50; // tetris friends : 50, 33, 22, 20, 17
 game.PlayField.SOFTDROP_REPEAT_MS = 40;
 game.PlayField.GRAVITY_MS = 200;
 game.PlayField.LOCK_DELAY_MS = 500;
