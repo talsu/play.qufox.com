@@ -1,11 +1,20 @@
-game.HoldTetrominoBox = me.Container.extend({
+game.TetrominoBox = me.Container.extend({
   init: function(x, y, width, height) {
     this._super(me.Container, "init", [width/2 + x, height/2 + y, width, height]);
   },
 
-  hold: function(tetrominoType) {
-    let unholded = this.tetromino ? this.unhold() : null;
+  hold: function(type) {
+    let existType = null;
+    if (this.tetromino) { // remove exsist tetromino.
+      existType = this.tetromino.type;
+      this.removeChild(this.tetromino);
+      this.tetromino = null;
+    }
 
+    // if new type is invaild, do not create new tetromino.
+    if (game.Tetromino.TYPES.indexOf(type) === -1) return existType;
+
+    // create new tetromino.
     let position = {
       I:[1, 0.5],
       J:[1.5,1],
@@ -14,23 +23,13 @@ game.HoldTetrominoBox = me.Container.extend({
       O:[1,1],
       Z:[1.5,1],
       S:[1.5,1]
-    }[tetrominoType];
-
-    this.tetromino = me.pool.pull("tetromino", tetrominoType, [], position[0], position[1]);
+    }[type];
+    this.tetromino = me.pool.pull("tetromino", type, [], position[0], position[1]);
     this.tetromino.deactive();
     this.addChild(this.tetromino);
 
-    return unholded;
+    return existType;
   },
-
-  unhold: function() {
-    if (!this.tetromino) return null;
-    let type = this.tetromino.type;
-    this.removeChild(this.tetromino);
-    this.tetromino = null;
-    return type;
-  },
-
   draw: function(renderer) {
     let color = renderer.getColor();
     renderer.setColor('#000000');

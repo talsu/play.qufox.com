@@ -21,7 +21,13 @@ game.PlayScreen = me.ScreenObject.extend({
     let playFieldWidth = game.PlayField.COL_COUNT * size;
     let playFieldHeight = game.PlayField.ROW_COUNT * size
 
-    me.game.world.addChild(me.pool.pull("playField", holdBox.width + (2*size), size, playFieldWidth, playFieldHeight, holdBox));
+    let tetrominoQueue = me.pool.pull("tetrominoBoxQueue", holdBox.width + playFieldWidth + (2*size), 0, 4);
+
+    let playField = me.pool.pull("playField", holdBox.width + (2*size), size, playFieldWidth, playFieldHeight, holdBox, tetrominoQueue);
+
+    me.game.world.addChild(playField);
+
+    me.game.world.addChild(tetrominoQueue);
 
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");

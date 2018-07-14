@@ -1,7 +1,8 @@
 game.PlayField = me.Container.extend({
-  init: function(x, y, width, height, holdBox) {
+  init: function(x, y, width, height, holdBox, queue) {
     this._super(me.Container, "init", [width/2 + x, height/2 + y, width, height]);
     this.holdBox = holdBox;
+    this.queue = queue;
     this.start();
   },
 
@@ -9,6 +10,7 @@ game.PlayField = me.Container.extend({
     this.activeTetromino = null;
     this.deactiveTetrominos = [];
     this.randomBag = [];
+    this.queue.clear();
     this.spawnTetromino();
     this.startAutoDropTimer();
   },
@@ -22,17 +24,8 @@ game.PlayField = me.Container.extend({
     this._super(me.Container, "draw", [renderer]);
   },
 
-  /*
-    https://tetris.wiki/Random_Generator
-  */
-  randomTypeGenerator: function() {
-    if (!this.randomBag) this.randomBag = [];
-    if (!this.randomBag.length) this.randomBag = game.Tetromino.TYPES.slice();
-    return this.randomBag.splice(Math.floor(Math.random()*this.randomBag.length), 1)[0]
-  },
-
   spawnTetromino: function(type) {
-    let tetrominotype = type || this.randomTypeGenerator();
+    let tetrominotype = type || this.queue.randomTypeGenerator();
     let tetromino = me.pool.pull("tetromino", tetrominotype, this.getDeactiveDots());
     if (tetromino.isSpwanSuccess) {
       this.activeTetromino = tetromino;

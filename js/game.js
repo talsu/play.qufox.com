@@ -29,7 +29,8 @@ var game = {
 
   // Run on game resources loaded.
   "loaded": function() {
-    me.pool.register("holdTetrominoBox", game.HoldTetrominoBox);
+    me.pool.register("holdTetrominoBox", game.TetrominoBox);
+    me.pool.register("tetrominoBoxQueue", game.TetrominoBoxQueue);
     me.pool.register("playField", game.PlayField);
     me.pool.register("tetromino", game.Tetromino);
 
