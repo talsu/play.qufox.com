@@ -97,7 +97,7 @@ game.Tetromino = me.Entity.extend({
       default: offsets = game.Tetromino.JLSTZ_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
     }
 
-    return offsets.some(colRow => {
+    return !offsets.length || offsets.some(colRow => {
       let newCol = this.col + colRow[0];
       let newRow = this.row - colRow[1]; // kickData Y is opposite Row.
       if (this.isValidPosition(newRotateType, newCol, newRow)) {
@@ -130,6 +130,10 @@ game.Tetromino = me.Entity.extend({
   moveDown: function() { return this.move(this.col, this.row + 1); },
 
   hardDrop: function() { while (this.moveDown()) {} },
+
+  isLocking: function() {
+    return !this.isValidPosition(this.rotateType, this.col, this.row + 1);
+  },
 
   clearLine: function(row) {
     // remove row dots.

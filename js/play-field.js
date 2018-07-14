@@ -13,6 +13,7 @@ game.PlayField = me.Container.extend({
     this.deactiveTetrominos = [];
     this.randomBag = [];
     this.spawnTetromino();
+    this.startAutoDropTimer();
   },
 
   draw: function(renderer) {
@@ -84,11 +85,22 @@ game.PlayField = me.Container.extend({
 
     if (state == "press" || state == "hold") {
       switch (direction) {
-        case "left": this.activeTetromino.moveLeft(); break;
-        case "right": this.activeTetromino.moveRight(); break;
+        case "left":
+          if (this.activeTetromino.moveLeft() && this.activeTetromino.isLocking()) {
+            this.restartLockTimer();
+          }
+          break;
+        case "right":
+          if (this.activeTetromino.moveRight() && this.activeTetromino.isLocking()) {
+            this.restartLockTimer();
+          }
+          break;
         case "softDrop":
           if (this.activeTetromino.moveDown()) {
             this.restartAutoDropTimer();
+            if (this.activeTetromino.isLocking()) {
+              this.startLockTimer();
+            }
           }
         break;
       }
@@ -96,9 +108,20 @@ game.PlayField = me.Container.extend({
 
     if (state == "press") {
       switch (direction) {
-        case "clockwise": this.activeTetromino.rotate(true); break;
-        case "anticlockwise": this.activeTetromino.rotate(false); break;
-        case "hardDrop": this.activeTetromino.hardDrop(); this.onDrop(); break;
+        case "clockwise":
+          if (this.activeTetromino.rotate(true) && this.activeTetromino.isLocking()) {
+            this.restartLockTimer();
+          }
+          break;
+        case "anticlockwise":
+          if (this.activeTetromino.rotate(false) && this.activeTetromino.isLocking()) {
+            this.restartLockTimer();
+          }
+          break;
+        case "hardDrop":
+          this.activeTetromino.hardDrop();
+          this.lock();
+          break;
       }
     }
   },
@@ -141,8 +164,11 @@ game.PlayField = me.Container.extend({
 
   },
 
-  onDrop: function() {
+  lock: function() {
+    this.stopLockTimer();
     if (!this.activeTetromino) return;
+    if (!this.activeTetromino.isLocking()) return;
+    this.stopAutoDropTimer();
     let droppedTetromino = this.activeTetromino;
     droppedTetromino.deactive();
     this.deactiveTetrominos.push(droppedTetromino);
@@ -152,17 +178,20 @@ game.PlayField = me.Container.extend({
     this.clearLine(droppedTetromino);
 
     // ARE
-
-    this.spawnTetromino();
+    me.timer.setTimeout(() => {
+      this.spawnTetromino();
+      this.startAutoDropTimer();
+    }, game.PlayField.ARE_MS);
   },
 
   startAutoDropTimer: function(interval) {
     if (this.autoDropTimer) return;
     this.autoDropTimer = me.timer.setInterval(() => {
-      if (this.activeTetromino && !this.activeTetromino.moveDown()) {
-        this.onDrop();
+      if (this.activeTetromino) {
+        this.activeTetromino.moveDown();
+        if (this.activeTetromino.isLocking()) this.startLockTimer();
       }
-    }, interval || 1000);
+    }, interval || game.PlayField.GRAVITY_MS);
   },
 
   stopAutoDropTimer: function() {
@@ -176,14 +205,30 @@ game.PlayField = me.Container.extend({
     this.startAutoDropTimer(interval);
   },
 
+  startLockTimer: function() {
+    if (this.lockTimer) return;
+    this.lockTimer = me.timer.setTimeout(() => this.lock(), game.PlayField.LOCK_DELAY_MS);
+  },
+
+  stopLockTimer: function() {
+    if (!this.lockTimer) return;
+    me.timer.clearTimeout(this.lockTimer);
+    this.lockTimer = null;
+  },
+
+  restartLockTimer: function() {
+    this.stopLockTimer();
+    this.startLockTimer();
+  },
+
   onActivateEvent : function() {
     this._super(me.Container, "onActivateEvent",[]);
-    this.startAutoDropTimer();
+    //this.startAutoDropTimer();
   },
 
   onDeactivateEvent : function() {
     this._super(me.Container, "onDeactivateEvent",[]);
-    this.stopAutoDropTimer();
+    //this.stopAutoDropTimer();
   }
 });
 
@@ -193,3 +238,6 @@ game.PlayField.COL_COUNT = 10;
 game.PlayField.DAS_INIT_MS = 183;
 game.PlayField.DAS_REPEAT_MS = 83;
 game.PlayField.SOFTDROP_REPEAT_MS = 40;
+game.PlayField.GRAVITY_MS = 200;
+game.PlayField.LOCK_DELAY_MS = 500;
+game.PlayField.ARE_MS = 417;
