@@ -47,7 +47,7 @@ export class TetrominoBox {
         this.tetromino = new Tetromino(this.scene, type, [], position[0], position[1]);
         this.tetromino.deactive();
         this.container.add(this.tetromino.container);
-        this.tetromino.draw();
+        // this.tetromino.draw();
 
         return existType;
       }

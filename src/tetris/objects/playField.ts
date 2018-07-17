@@ -9,7 +9,6 @@ export class PlayField {
     private queue: TetrominoBoxQueue;
     private deactiveTetrominos: Tetromino[];
     private activeTetromino: Tetromino;
-    private testDot: Phaser.GameObjects.Graphics;
     private canHold: boolean;
     private dasFlags: any;
     private autoDropTimer: number;

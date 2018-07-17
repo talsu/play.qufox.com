@@ -10,13 +10,13 @@ export interface ColRow extends Array<number> {
 
 export let CONST = {
     PLAY_FIELD : {
-        BLOCK_SIZE : 5,
+        BLOCK_SIZE : 20,
         ROW_COUNT : 20,
         COL_COUNT : 10,
         DAS_MS : 267, // tetris friends : 267, 183, 150, 133, 117
         AR_MS : 50, // tetris friends : 50, 33, 22, 20, 17
         SOFTDROP_REPEAT_MS : 40,
-        GRAVITY_MS : 200,
+        GRAVITY_MS : 1000,
         LOCK_DELAY_MS : 500,
         ARE_MS : 417
     },
@@ -84,6 +84,15 @@ export let CONST = {
             O:0xede40b,
             Z:0xc92323,
             S:0x26a723
+        },
+        SIZE : {
+            I:[4,4],
+            J:[3,3],
+            L:[3,3],
+            T:[3,3],
+            O:[4,2],
+            Z:[3,3],
+            S:[3,3]
         },
         I_KICK_DATA : {
             "0>R": [[0,0], [-2,0], [1,0], [-2,-1], [1,2]],

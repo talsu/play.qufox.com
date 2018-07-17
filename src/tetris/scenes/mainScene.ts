@@ -5,7 +5,7 @@
  */
 
 import { PlayField } from '../objects/playField';
-import { CONST } from "../const/const";
+import { CONST, TetrominoType, RotateType } from "../const/const";
 import { TetrominoBox } from "../objects/tetrominoBox";
 import { TetrominoBoxQueue } from "../objects/tetrominoBoxQueue";
 
@@ -30,6 +30,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   create(): void {
+    CONST.TETROMINO.TYPES.forEach(type => this.addTexture(type));
     
     let size = CONST.PLAY_FIELD.BLOCK_SIZE;
 
@@ -65,10 +66,32 @@ export class MainScene extends Phaser.Scene {
     this.playField.chargeDAS("right", Phaser.Input.Keyboard.DownDuration(this.keys.RIGHT), diffTime);
     this.playField.chargeDAS("softDrop", Phaser.Input.Keyboard.DownDuration(this.keys.DOWN), diffTime);
     this.playField.chargeDAS("hardDrop", Phaser.Input.Keyboard.DownDuration(this.keys.SPACE), diffTime);
-    this.playField.chargeDAS("clockwise", Phaser.Input.Keyboard.DownDuration(this.keys.Z) || Phaser.Input.Keyboard.DownDuration(this.keys.CTRL), diffTime);
-    this.playField.chargeDAS("anticlockwise", Phaser.Input.Keyboard.DownDuration(this.keys.X) || Phaser.Input.Keyboard.DownDuration(this.keys.UP), diffTime);
+    this.playField.chargeDAS("anticlockwise", Phaser.Input.Keyboard.DownDuration(this.keys.Z) || Phaser.Input.Keyboard.DownDuration(this.keys.CTRL), diffTime);
+    this.playField.chargeDAS("clockwise", Phaser.Input.Keyboard.DownDuration(this.keys.X) || Phaser.Input.Keyboard.DownDuration(this.keys.UP), diffTime);
     this.playField.chargeDAS("hold", Phaser.Input.Keyboard.DownDuration(this.keys.C), diffTime);
 
     this.playField.update();
+  }
+
+  addTexture(type:TetrominoType): void {
+    let graphics = this.add.graphics();
+      // graphics.fillStyle(this.deactiveDots ? 0xEEEEEE: CONST.TETROMINO.COLOR[this.type]);
+    graphics.fillStyle(CONST.TETROMINO.COLOR[type]);
+
+    CONST.TETROMINO.DOTS[type][RotateType.UP].forEach(colRow => {
+        graphics.fillRect(
+            colRow[0] * CONST.PLAY_FIELD.BLOCK_SIZE,
+            colRow[1] * CONST.PLAY_FIELD.BLOCK_SIZE,
+            CONST.PLAY_FIELD.BLOCK_SIZE,
+            CONST.PLAY_FIELD.BLOCK_SIZE);
+    });
+
+    let key:string = 'tetromino_' + type;
+
+    let tetrominoSize = CONST.TETROMINO.SIZE[type];
+    let width = CONST.PLAY_FIELD.BLOCK_SIZE * tetrominoSize[0];
+    let height = CONST.PLAY_FIELD.BLOCK_SIZE * tetrominoSize[1];
+    graphics.generateTexture(key, width, height);
+    graphics.destroy();
   }
 }
