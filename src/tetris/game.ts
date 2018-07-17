@@ -12,8 +12,8 @@ import { CONST } from "./const/const";
 
 // main game configuration
 const config: GameConfig = {
-  width: 900,
-  height: 600,
+  width: CONST.PLAY_FIELD.BLOCK_SIZE * 26,
+  height: CONST.PLAY_FIELD.BLOCK_SIZE * 22,
   type: Phaser.AUTO,
   parent: "game",
   scene: MainScene,

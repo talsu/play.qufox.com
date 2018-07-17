@@ -1,7 +1,16 @@
 
+
+
+export enum TetrominoType { I = "I", J = "J", L = "L", O = "O", S = "S", T = "T", Z = "Z" }
+export enum RotateType { UP = "0", LEFT = "L", DOWN = "2", RIGHT = "R" }
+
+export interface ColRow extends Array<number> {
+    [key: number]: number;
+}
+
 export let CONST = {
     PLAY_FIELD : {
-        BLOCK_SIZE : 20,
+        BLOCK_SIZE : 5,
         ROW_COUNT : 20,
         COL_COUNT : 10,
         DAS_MS : 267, // tetris friends : 267, 183, 150, 133, 117
@@ -13,7 +22,15 @@ export let CONST = {
     },
     TETROMINO : {
         SHOW_GHOST : true,
-        TYPES : ['I', 'J', 'L', 'O', 'S', 'T', 'Z'],
+        TYPES : [
+            TetrominoType.I, 
+            TetrominoType.J, 
+            TetrominoType.L, 
+            TetrominoType.O, 
+            TetrominoType.S, 
+            TetrominoType.T, 
+            TetrominoType.Z
+        ],
         DOTS : {
             I: {
                 0:[[0,1],[1,1],[2,1],[3,1]],
@@ -58,15 +75,15 @@ export let CONST = {
                 L:[[1,0],[0,1],[1,1],[0,2]]
             }
         },
-        ROTATE_SEQ : ['0', 'R', '2', 'L'],
+        ROTATE_SEQ : [RotateType.UP, RotateType.RIGHT, RotateType.DOWN, RotateType.LEFT],
         COLOR : {
-            I:"#1cd6ff",
-            J:"#126fc4",
-            L:"#df9a00",
-            T:"#9826c7",
-            O:"#ede40b",
-            Z:"#c92323",
-            S:"#26a723"
+            I:0x1cd6ff,
+            J:0x126fc4,
+            L:0xdf9a00,
+            T:0x9826c7,
+            O:0xede40b,
+            Z:0xc92323,
+            S:0x26a723
         },
         I_KICK_DATA : {
             "0>R": [[0,0], [-2,0], [1,0], [-2,-1], [1,2]],
@@ -100,4 +117,3 @@ export let CONST = {
         }
     }
 };
-  
