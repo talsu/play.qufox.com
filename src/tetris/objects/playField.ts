@@ -36,6 +36,7 @@ export class PlayField {
     start() {
         this.activeTetromino = null;
         this.deactiveTetrominos = [];
+        this.holdBox.clear();
         this.queue.clear();
         this.spawnTetromino();
         this.startAutoDropTimer();
@@ -53,9 +54,16 @@ export class PlayField {
             this.activeTetromino = tetromino;
             this.container.add(this.activeTetromino.container);
         } else {
+            tetromino.destroy();
             console.log('Game Over');
-            if (this.activeTetromino) this.container.remove(this.activeTetromino.container);
-            this.deactiveTetrominos.forEach(tetromino => this.container.remove(tetromino.container));
+            if (this.activeTetromino){
+                this.container.remove(this.activeTetromino.container);
+                this.activeTetromino.destroy();
+            }
+            this.deactiveTetrominos.forEach(tetromino => {
+                this.container.remove(tetromino.container);
+                tetromino.destroy();
+            });
             this.start();
         }
         this.canHold = true;
@@ -143,6 +151,7 @@ export class PlayField {
                     let unholded = this.holdBox.hold(this.activeTetromino.type);
         
                     this.container.remove(this.activeTetromino.container);
+                    this.activeTetromino.destroy();
                     this.activeTetromino = null;
                     this.spawnTetromino(unholded);
                     this.restartAutoDropTimer();
@@ -173,8 +182,11 @@ export class PlayField {
         needClearRows.forEach(row => {
             let emptyTetrominos = this.deactiveTetrominos.filter(tetromino => tetromino.clearLine(row));
             // remove empty tetromino.
-            emptyTetrominos.forEach(tetromino => this.container.remove(tetromino.container));
-            emptyTetrominos.forEach(tetromino => this.deactiveTetrominos.splice(this.deactiveTetrominos.indexOf(tetromino), 1));
+            emptyTetrominos.forEach(tetromino => {
+                this.container.remove(tetromino.container);
+                tetromino.destroy();
+                this.deactiveTetrominos.splice(this.deactiveTetrominos.indexOf(tetromino), 1);
+            });
         });
 
     }

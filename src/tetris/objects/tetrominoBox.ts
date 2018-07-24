@@ -28,6 +28,7 @@ export class TetrominoBox {
         if (this.tetromino) { // remove exsist tetromino.
           existType = this.tetromino.type;
           this.container.remove(this.tetromino.container);
+          this.tetromino.destroy();
           this.tetromino = null;
         }
     
@@ -50,5 +51,9 @@ export class TetrominoBox {
         // this.tetromino.draw();
 
         return existType;
-      }
+    }
+
+    clear() {
+        this.hold('clear');
+    }
 }
