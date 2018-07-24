@@ -30,8 +30,8 @@ export class Tetromino {
         this.type = type;
         this.rotateType = RotateType.UP;
 
-        let initCol = col === undefined ? 3 : row;
-        let initRow = col || 0;
+        let initCol = col === undefined ? 3 : col;
+        let initRow = row || 0;
 
         this.ghostRowOffset = 0;
         this.blockedPositions = blockedPositions || [];
@@ -76,7 +76,7 @@ export class Tetromino {
         // remove row dots.
         this.deactiveDots
             .filter(colRow => row == (this.row + colRow[1]))
-            .forEach((colRow, index) => this.deactiveDots.splice(index, 1));
+            .forEach((colRow) => this.deactiveDots.splice(this.deactiveDots.indexOf(colRow), 1));
         // pull down upper dots.
         this.deactiveDots
             .filter(colRow => row > (this.row + colRow[1]))

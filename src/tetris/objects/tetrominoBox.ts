@@ -36,7 +36,7 @@ export class TetrominoBox {
     
         // create new tetromino.
         let position = {
-            I:[1, 0.5],
+            I:[1,0.5],
             J:[1.5,1],
             L:[1.5,1],
             T:[1.5,1],
