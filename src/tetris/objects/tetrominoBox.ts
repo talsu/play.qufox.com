@@ -14,10 +14,13 @@ export class TetrominoBox {
         this.container.width = width;
         this.container.height = height;
 
-        let bg = scene.add.graphics();
-        bg.lineStyle(1, 0xEEEEEE, 1.0);
-        bg.strokeRect(0, 0, this.container.width, this.container.height);
-        this.container.add(bg);
+        let background = scene.add.graphics();
+        background.fillStyle(0x000000, 0.2);
+        background.fillRect(0, 0, this.container.width, this.container.height);
+        
+        background.lineStyle(1, 0xEEEEEE, 1.0);
+        background.strokeRect(0, 0, this.container.width, this.container.height);
+        this.container.add(background);
 
         this.graphics = scene.add.graphics();
         this.container.add(this.graphics);

@@ -23,12 +23,14 @@ export class PlayField {
         this.container = scene.add.container(x, y);
         this.container.width = width;
         this.container.height = height;
-        console.log(height);
 
-        let border = scene.add.graphics();
-        border.lineStyle(1, 0xEEEEEE, 1.0);
-        border.strokeRect(0, 0, this.container.width, this.container.height);
-        this.container.add(border);
+        let background = scene.add.graphics();
+        background.fillStyle(0x000000, 0.2);
+        background.fillRect(0, 0, this.container.width, this.container.height);
+
+        background.lineStyle(1, 0xEEEEEE, 1.0);
+        background.strokeRect(0, 0, this.container.width, this.container.height);
+        this.container.add(background);
 
         this.start();
     }

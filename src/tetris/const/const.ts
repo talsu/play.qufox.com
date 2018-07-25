@@ -10,7 +10,7 @@ export interface ColRow extends Array<number> {
 
 export let CONST = {
     PLAY_FIELD : {
-        BLOCK_SIZE : 20,
+        BLOCK_SIZE : 30,
         ROW_COUNT : 20,
         COL_COUNT : 10,
         DAS_MS : 267, // tetris friends : 267, 183, 150, 133, 117

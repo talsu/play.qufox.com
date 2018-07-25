@@ -26,10 +26,11 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload(): void {
-    
+    this.load.image('background', 'assets/image/bongtalk-background-default.jpg');
   }
 
   create(): void {
+    this.add.image(0, 300, 'background');
     CONST.TETROMINO.TYPES.forEach(type => this.addTexture(type));
     
     let size = CONST.PLAY_FIELD.BLOCK_SIZE;
@@ -64,7 +65,7 @@ export class MainScene extends Phaser.Scene {
 
     this.playField.chargeDAS("left", Phaser.Input.Keyboard.DownDuration(this.keys.LEFT), diffTime);
     this.playField.chargeDAS("right", Phaser.Input.Keyboard.DownDuration(this.keys.RIGHT), diffTime);
-    this.playField.chargeDAS("softDrop", Phaser.Input.Keyboard.DownDuration(this.keys.DOWN), diffTime);
+    this.playField.chargeDAS("softDrop", Phaser.Input.Keyboard.DownDuration(this.keys.DOWN), diffTime, CONST.PLAY_FIELD.SOFTDROP_REPEAT_MS, CONST.PLAY_FIELD.SOFTDROP_REPEAT_MS);
     this.playField.chargeDAS("hardDrop", Phaser.Input.Keyboard.DownDuration(this.keys.SPACE), diffTime);
     this.playField.chargeDAS("anticlockwise", Phaser.Input.Keyboard.DownDuration(this.keys.Z) || Phaser.Input.Keyboard.DownDuration(this.keys.CTRL), diffTime);
     this.playField.chargeDAS("clockwise", Phaser.Input.Keyboard.DownDuration(this.keys.X) || Phaser.Input.Keyboard.DownDuration(this.keys.UP), diffTime);
