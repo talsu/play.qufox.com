@@ -25,7 +25,7 @@ export class PlayField {
         this.container.height = height;
 
         let background = scene.add.graphics();
-        background.fillStyle(0x000000, 0.2);
+        background.fillStyle(0x000000, 0.6);
         background.fillRect(0, 0, this.container.width, this.container.height);
 
         background.lineStyle(1, 0xEEEEEE, 1.0);
@@ -110,20 +110,26 @@ export class PlayField {
         if (state == "press" || state == "hold") {
             switch (direction) {
                 case "left":
-                if (this.activeTetromino.moveLeft() && this.activeTetromino.isLocking()) {
-                    this.restartLockTimer();
+                if (this.activeTetromino.moveLeft()) {
+                    if (this.activeTetromino.isLocking())
+                        this.restartLockTimer();
+                    else 
+                        this.stopLockTimer();
                 }
                 break;
                 case "right":
-                if (this.activeTetromino.moveRight() && this.activeTetromino.isLocking()) {
-                    this.restartLockTimer();
+                if (this.activeTetromino.moveRight()) {
+                    if (this.activeTetromino.isLocking())
+                        this.restartLockTimer();
+                    else 
+                        this.stopLockTimer();
                 }
                 break;
                 case "softDrop":
                 if (this.activeTetromino.moveDown()) {
                     this.restartAutoDropTimer();
                     if (this.activeTetromino.isLocking()) {
-                    this.startLockTimer();
+                        this.startLockTimer();
                     }
                 }
                 break;
@@ -133,13 +139,19 @@ export class PlayField {
         if (state == "press") {
             switch (direction) {
                 case "clockwise":
-                if (this.activeTetromino.rotate(true) && this.activeTetromino.isLocking()) {
-                    this.restartLockTimer();
+                if (this.activeTetromino.rotate(true)) {
+                    if (this.activeTetromino.isLocking())
+                        this.restartLockTimer();
+                    else 
+                        this.stopLockTimer();
                 }
                 break;
                 case "anticlockwise":
-                if (this.activeTetromino.rotate(false) && this.activeTetromino.isLocking()) {
-                    this.restartLockTimer();
+                if (this.activeTetromino.rotate(false)) {
+                    if (this.activeTetromino.isLocking())
+                        this.restartLockTimer();
+                    else 
+                        this.stopLockTimer();
                 }
                 break;
                 case "hardDrop":
@@ -236,11 +248,13 @@ export class PlayField {
     
     startLockTimer() {
         if (this.lockTimer) return;
+        if (this.activeTetromino) this.activeTetromino.playLockAnimation();
         this.lockTimer = setTimeout(() => this.lock(), CONST.PLAY_FIELD.LOCK_DELAY_MS);
     }
     
     stopLockTimer() {
         if (!this.lockTimer) return;
+        if (this.activeTetromino) this.activeTetromino.stopLockAnimation();
         clearTimeout(this.lockTimer);
         this.lockTimer = null;
     }

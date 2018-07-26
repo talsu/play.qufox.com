@@ -15,6 +15,7 @@ export class Tetromino {
     public isSpwanSuccess: boolean;
     public container: Phaser.GameObjects.Container;
     public type: TetrominoType;
+    private lockAnimationTween: Phaser.Tweens.Tween;
     
     constructor(scene: Phaser.Scene, type: TetrominoType, blockedPositions?: ColRow[], col?:number, row?:number) {
         this.scene = scene;
@@ -217,5 +218,28 @@ export class Tetromino {
         this.container.remove(this.deactiveDotGraphics);
         this.container.remove(this.ghostDotGraphics);
         this.container.destroy();
+    }
+
+    playLockAnimation() {
+        if (this.lockAnimationTween) this.stopLockAnimation();
+        this.lockAnimationTween = this.scene.add.tween({
+            targets: this.sprite,
+            ease: 'Sine.easeInOut',
+            duration: CONST.PLAY_FIELD.LOCK_DELAY_MS,
+            delay: 0,
+            alpha: {
+                getStart: () => 1.0,
+                getEnd: () => 0.0
+            },
+            onComplete: () => this.sprite.alpha = 1.0
+        });
+    }
+
+    stopLockAnimation() {
+        if (this.lockAnimationTween) {
+            this.lockAnimationTween.stop();
+            this.lockAnimationTween = null;
+            this.sprite.alpha = 1.0;
+        }
     }
 }
