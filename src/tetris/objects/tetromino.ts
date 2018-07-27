@@ -220,7 +220,7 @@ export class Tetromino {
         this.container.destroy();
     }
 
-    playLockAnimation() {
+    playLockAnimation(callback?: Function) {
         if (this.lockAnimationTween) this.stopLockAnimation();
         this.lockAnimationTween = this.scene.add.tween({
             targets: this.sprite,
@@ -231,12 +231,19 @@ export class Tetromino {
                 getStart: () => 1.0,
                 getEnd: () => 0.0
             },
-            onComplete: () => this.sprite.alpha = 1.0
+            onComplete: () => {
+                this.sprite.alpha = 1.0;
+                this.lockAnimationTween = null;
+                if (callback) callback();
+            }
         });
     }
 
+    isPlayingLockAnimation(): boolean { return Boolean(this.lockAnimationTween); }
+
     stopLockAnimation() {
         if (this.lockAnimationTween) {
+            this.lockAnimationTween.pause();
             this.lockAnimationTween.stop();
             this.lockAnimationTween = null;
             this.sprite.alpha = 1.0;
