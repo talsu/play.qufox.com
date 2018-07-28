@@ -11,9 +11,10 @@ export class PlayField {
     private activeTetromino: Tetromino;
     private canHold: boolean;
     private dasFlags: any;
-    private autoDropTimer: number;
+    // private autoDropTimer: number;
 
     public container: Phaser.GameObjects.Container;
+    autoDropTimer: Phaser.Time.TimerEvent;
     
     constructor(scene: Phaser.Scene, holdBox: TetrominoBox, queue: TetrominoBoxQueue,  x: number, y: number, width:number, height:number) {
         this.scene = scene;
@@ -193,25 +194,31 @@ export class PlayField {
         this.clearLine(droppedTetromino);
 
         // ARE
-        setTimeout(() => {
+        this.scene.time.delayedCall(CONST.PLAY_FIELD.ARE_MS, () => {
             this.spawnTetromino();
             this.startAutoDropTimer();
-        }, CONST.PLAY_FIELD.ARE_MS);
+        }, [], this);
     }
 
     startAutoDropTimer(interval?: number) {
         if (this.autoDropTimer) return;
-        this.autoDropTimer = setInterval(() => {
-            if (this.activeTetromino) {
-                this.activeTetromino.moveDown();
-                if (this.activeTetromino.isLocking()) this.startLockTimer();
-            }
-        }, interval || CONST.PLAY_FIELD.GRAVITY_MS);
+        this.autoDropTimer = this.scene.time.addEvent({
+            delay: interval || CONST.PLAY_FIELD.GRAVITY_MS,
+            callback: () => {
+                if (this.activeTetromino) {
+                    this.activeTetromino.moveDown();
+                    if (this.activeTetromino.isLocking()) this.startLockTimer();
+                }
+            },
+            callbackScope: this,
+            loop: true
+        });
     }
     
     stopAutoDropTimer() {
         if (!this.autoDropTimer) return;
-        clearInterval(this.autoDropTimer);
+        this.scene.time.addEvent
+        this.autoDropTimer.destroy();
         this.autoDropTimer = null;
     }
     

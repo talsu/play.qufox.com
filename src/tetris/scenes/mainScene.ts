@@ -1,7 +1,7 @@
 /**
- * @author       Digitsensitive <digit.sensitivee@gmail.com>
- * @copyright    2018 Digitsensitive
- * @license      Digitsensitive
+ * @author       talsu  <talsu84@gmail.com>
+ * @copyright    2018 talsu.net
+ * @license      MIT
  */
 
 import { PlayField } from '../objects/playField';
