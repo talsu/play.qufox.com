@@ -27,6 +27,13 @@ export class MainScene extends Phaser.Scene {
 
   preload(): void {
     this.load.image('background', 'assets/image/bongtalk-background-default.jpg');
+    this.load.image(CONST.TETROMINO.IMAGES.Z, 'assets/image/red-dot.png');
+    this.load.image(CONST.TETROMINO.IMAGES.L, 'assets/image/orange-dot.png');
+    this.load.image(CONST.TETROMINO.IMAGES.O, 'assets/image/yellow-dot.png');
+    this.load.image(CONST.TETROMINO.IMAGES.S, 'assets/image/green-dot.png');
+    this.load.image(CONST.TETROMINO.IMAGES.I, 'assets/image/cyan-dot.png');
+    this.load.image(CONST.TETROMINO.IMAGES.J, 'assets/image/blue-dot.png');
+    this.load.image(CONST.TETROMINO.IMAGES.T, 'assets/image/purple-dot.png');
   }
 
   create(): void {

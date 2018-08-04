@@ -11,6 +11,7 @@ export interface ColRow extends Array<number> {
 export let CONST = {
     PLAY_FIELD : {
         BLOCK_SIZE : 30,
+        BLOCK_IMAGE_SIZE : 100,
         ROW_COUNT : 20,
         COL_COUNT : 10,
         DAS_MS : 170, // tetris friends : 267, 183, 150, 133, 117
@@ -31,6 +32,15 @@ export let CONST = {
             TetrominoType.T, 
             TetrominoType.Z
         ],
+        IMAGES : {
+            I: 'cyan-dot',
+            J: 'blue-dot',
+            L: 'orange-dot',
+            O: 'yellow-dot',
+            S: 'green-dot',
+            T: 'purple-dot',
+            Z: 'red-dot'
+        },
         DOTS : {
             I: {
                 0:[[0,1],[1,1],[2,1],[3,1]],

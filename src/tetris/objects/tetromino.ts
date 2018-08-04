@@ -8,9 +8,8 @@ export class Tetromino {
     private deactiveDots: ColRow[];
     private blockedPositions: ColRow[];
     private rotateType: RotateType;
-    private sprite: Phaser.GameObjects.Sprite;
-    private deactiveDotGraphics: Phaser.GameObjects.Graphics;
     private ghostDotGraphics: Phaser.GameObjects.Graphics;
+    private dotImages: Phaser.GameObjects.Container;
 
     public isSpwanSuccess: boolean;
     public container: Phaser.GameObjects.Container;
@@ -34,11 +33,19 @@ export class Tetromino {
         this.blockedPositions = blockedPositions || [];
         this.deactiveDots = null;
 
-        this.sprite = this.scene.add.sprite(this.container.width / 2, this.container.height / 2, 'tetromino_' + this.type);
-        this.container.add(this.sprite);
-        
-        this.deactiveDotGraphics = this.scene.add.graphics();
-        this.container.add(this.deactiveDotGraphics);
+        this.dotImages = this.scene.add.container(0,0);
+        this.container.add(this.dotImages);
+        CONST.TETROMINO.DOTS[this.type][this.rotateType].forEach(colRow => {
+            let imageOffset = CONST.PLAY_FIELD.BLOCK_SIZE / 2;
+            let dotImage = this.scene.add.image(
+                colRow[0] * CONST.PLAY_FIELD.BLOCK_SIZE + imageOffset,
+                colRow[1] * CONST.PLAY_FIELD.BLOCK_SIZE + imageOffset,
+                CONST.TETROMINO.IMAGES[this.type]
+            )
+            .setScale(CONST.PLAY_FIELD.BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+            this.dotImages.add(dotImage);
+        });
+        this.moveDotImages();
 
         this.ghostDotGraphics = this.scene.add.graphics();
         this.container.add(this.ghostDotGraphics);
@@ -53,7 +60,8 @@ export class Tetromino {
         this.col = col;
         this.container.x = this.col * CONST.PLAY_FIELD.BLOCK_SIZE;
         this.container.y = this.row * CONST.PLAY_FIELD.BLOCK_SIZE;
-    
+
+        this.moveDotImages();
         this.drawGhostDots();
     
         return true;
@@ -91,16 +99,32 @@ export class Tetromino {
     }
 
     drawDeactiveDots() {
-        this.deactiveDotGraphics.clear();
+        
+        const imageOffset = CONST.PLAY_FIELD.BLOCK_SIZE / 2;
+        let index = 0;
+        let dotOffsets = this.getDotOffsets();
+        this.dotImages.each((dotImage) => {
+            let colRow = dotOffsets[index];
+            if (colRow){
+                dotImage.x = colRow[0] * CONST.PLAY_FIELD.BLOCK_SIZE + imageOffset;
+                dotImage.y = colRow[1] * CONST.PLAY_FIELD.BLOCK_SIZE + imageOffset;
+            } else {
+                // Hide
+                dotImage.alpha = 0; 
+            }
+            index++;
+        });
+    }
 
-        // draw deactive dots
-        this.deactiveDotGraphics.fillStyle(CONST.TETROMINO.COLOR[this.type]);
-        this.getDotOffsets().forEach(colRow => {
-            this.deactiveDotGraphics.fillRect(
-                colRow[0] * CONST.PLAY_FIELD.BLOCK_SIZE,
-                colRow[1] * CONST.PLAY_FIELD.BLOCK_SIZE,
-                CONST.PLAY_FIELD.BLOCK_SIZE,
-                CONST.PLAY_FIELD.BLOCK_SIZE);
+    moveDotImages() {
+
+        const imageOffset = CONST.PLAY_FIELD.BLOCK_SIZE / 2;
+        let index = 0;
+        this.dotImages.each((dotImage) => {
+            let colRow = CONST.TETROMINO.DOTS[this.type][this.rotateType][index];
+            dotImage.x = colRow[0] * CONST.PLAY_FIELD.BLOCK_SIZE + imageOffset;
+            dotImage.y = colRow[1] * CONST.PLAY_FIELD.BLOCK_SIZE + imageOffset;
+            index++;
         });
     }
 
@@ -123,8 +147,6 @@ export class Tetromino {
     }
 
     deactive() {
-        // remove sprite
-        this.sprite.destroy();
         this.ghostDotGraphics.destroy();
 
         this.deactiveDots = this.getDotOffsets().map(colRow => [colRow[0], colRow[1]]);
@@ -154,13 +176,6 @@ export class Tetromino {
             if (this.isValidPosition(newRotateType, newCol, newRow)) {
                 this.rotateType = newRotateType;
                 this.move(newCol, newRow);
-                
-                switch (this.rotateType) {
-                    case RotateType.UP: this.sprite.angle = 0; break;
-                    case RotateType.RIGHT: this.sprite.angle = 90; break;
-                    case RotateType.DOWN: this.sprite.angle = 180; break;
-                    case RotateType.LEFT: this.sprite.angle = 270; break;
-                }
                 
                 return true;
             }
@@ -209,13 +224,13 @@ export class Tetromino {
     }
 
     destroy() {
-        this.sprite.destroy();
-        this.deactiveDotGraphics.clear();
-        this.deactiveDotGraphics.destroy();
+        this.dotImages.each(dotImage => dotImage.destroy());
+        this.dotImages.destroy();
+
         this.ghostDotGraphics.clear();
         this.ghostDotGraphics.destroy();
-        this.container.remove(this.sprite);
-        this.container.remove(this.deactiveDotGraphics);
+
+        this.container.remove(this.dotImages);
         this.container.remove(this.ghostDotGraphics);
         this.container.destroy();
     }
@@ -223,7 +238,7 @@ export class Tetromino {
     playLockAnimation(callback?: Function) {
         if (this.lockAnimationTween) this.stopLockAnimation();
         this.lockAnimationTween = this.scene.add.tween({
-            targets: this.sprite,
+            targets: this.dotImages,
             ease: 'Sine.easeInOut',
             duration: CONST.PLAY_FIELD.LOCK_DELAY_MS,
             delay: 0,
@@ -232,7 +247,7 @@ export class Tetromino {
                 getEnd: () => 0.0
             },
             onComplete: () => {
-                this.sprite.alpha = 1.0;
+                this.dotImages.alpha = 1.0;
                 this.lockAnimationTween = null;
                 if (callback) callback();
             }
@@ -246,7 +261,7 @@ export class Tetromino {
             this.lockAnimationTween.pause();
             this.lockAnimationTween.stop();
             this.lockAnimationTween = null;
-            this.sprite.alpha = 1.0;
+            this.dotImages.alpha = 1.0;
         }
     }
 }
