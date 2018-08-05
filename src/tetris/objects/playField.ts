@@ -183,7 +183,7 @@ export class PlayField {
     lock() {
         this.stopLockTimer();
         if (!this.activeTetromino) return;
-        if (!this.activeTetromino.isLocking()) return;
+        if (!this.activeTetromino.isLockable()) return;
         this.stopAutoDropTimer();
         let droppedTetromino = this.activeTetromino;
         droppedTetromino.deactive();
@@ -205,9 +205,11 @@ export class PlayField {
         this.autoDropTimer = this.scene.time.addEvent({
             delay: interval || CONST.PLAY_FIELD.GRAVITY_MS,
             callback: () => {
-                if (this.activeTetromino) {
-                    this.activeTetromino.moveDown();
-                    if (this.activeTetromino.isLocking()) this.startLockTimer();
+                if (this.activeTetromino && 
+                    this.activeTetromino.moveDown() &&
+                    this.activeTetromino.isLockable()
+                ) {
+                    this.startLockTimer();
                 }
             },
             callbackScope: this,
@@ -228,25 +230,25 @@ export class PlayField {
     }
     
     startLockTimer() {
-        if (this.activeTetromino) this.activeTetromino.playLockAnimation(() => this.lock());
+        if (this.activeTetromino) {
+            this.activeTetromino.playLockAnimation(() => this.lock());
+        }
     }
     
     stopLockTimer() {
-        if (this.activeTetromino && this.activeTetromino.isPlayingLockAnimation()) 
+        if (this.activeTetromino && this.activeTetromino.isPlayingLockAnimation()) {
             this.activeTetromino.stopLockAnimation();
-    }
-    
-    restartLockTimer() {
-        this.stopLockTimer();
-        this.startLockTimer();
+        }
     }
 
     setLockTimer(moveSuccess: boolean): void {
         if (moveSuccess) {
-            if (this.activeTetromino.isLocking())
-                this.restartLockTimer();
-            else 
+            if (this.activeTetromino.isLockable()){
                 this.stopLockTimer();
+                this.startLockTimer();
+            } else { 
+                this.stopLockTimer();
+            }
         }
     }
 }

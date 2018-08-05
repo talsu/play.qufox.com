@@ -77,7 +77,7 @@ export class Tetromino {
 
     hardDrop() { while (this.moveDown()) {} }
 
-    isLocking():boolean {
+    isLockable():boolean {
         return !this.isValidPosition(this.rotateType, this.col, this.row + 1);
     }
 
