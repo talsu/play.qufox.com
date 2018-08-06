@@ -220,9 +220,6 @@ export class Tetromino {
         });
     }
 
-    update() {
-    }
-
     destroy() {
         this.dotImages.each(dotImage => dotImage.destroy());
         this.dotImages.destroy();

@@ -10,8 +10,6 @@ export class PlayField {
     private deactiveTetrominos: Tetromino[];
     private activeTetromino: Tetromino;
     private canHold: boolean;
-    private dasFlags: any;
-    // private autoDropTimer: number;
 
     public container: Phaser.GameObjects.Container;
     autoDropTimer: Phaser.Time.TimerEvent;
@@ -44,11 +42,6 @@ export class PlayField {
         this.startAutoDropTimer();
     }
 
-    update() :void {
-        // this.draw();
-        if (this.activeTetromino) this.activeTetromino.update();
-    }
-    
     spawnTetromino(type?:TetrominoType): void {
         let tetrominotype = type || this.queue.randomTypeGenerator();
         let tetromino = new Tetromino(this.scene, tetrominotype, this.getDeactiveDots());
@@ -73,35 +66,6 @@ export class PlayField {
 
     getDeactiveDots(): ColRow[] {
         return this.deactiveTetrominos.map(tetromino => tetromino.getDots()).reduce((a, b) => a.concat(b),[]);
-    }
-    
-    /*
-        https://tetris.wiki/DAS
-    */
-    chargeDAS(direction:string, isPressed:boolean, time:number, init?:number, repeat?:number) {
-        if (!this.dasFlags) this.dasFlags = {};
-        if (!this.dasFlags[direction]) this.dasFlags[direction] = 0;
-        let oldValue = this.dasFlags[direction];
-        if (isPressed) this.dasFlags[direction] += time;
-        else this.dasFlags[direction] = 0;
-        let newValue = this.dasFlags[direction];
-
-        if (oldValue == 0 && newValue) this.onInput(direction, "press");
-        if (oldValue && newValue == 0) this.onInput(direction, "release");
-
-        if (newValue == 0) return;
-
-        let initDelay = init || CONST.PLAY_FIELD.DAS_MS;
-        let repeatDelay = repeat || CONST.PLAY_FIELD.AR_MS;
-        let rOld = Math.floor((oldValue - initDelay) / repeatDelay);
-        let rNew = Math.floor((newValue - initDelay) / repeatDelay);
-
-        if (rNew >= 0 && rOld < rNew) {
-            if (rOld < 0) rOld = -1;
-            for (let i = 0; i < (rNew - rOld); ++i) {
-                this.onInput(direction, "hold");
-            }
-        }
     }
 
     onInput(direction: string, state: string) {
