@@ -3,13 +3,12 @@
   "version": "0.0.1",
   "description": "play.qufox.com",
   "keywords": [
-    "Phaser",
-    "Phaser 3",
-    "Phaser3",
-    "TypeScript",
-    "Webpack",
-    "Tutorials",
-    "Game Examples"
+    "qufox",
+    "qufox.com",
+    "play.qufox.com",
+    "tetris",
+    "game",
+    "web"
   ],
   "devDependencies": {
     "expose-loader": "0.7.5",
