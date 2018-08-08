@@ -3,6 +3,7 @@
 
 export enum TetrominoType { I = "I", J = "J", L = "L", O = "O", S = "S", T = "T", Z = "Z" }
 export enum RotateType { UP = "0", LEFT = "L", DOWN = "2", RIGHT = "R" }
+export enum InputState { PRESS = "press", RELEASE = "release", HOLD = "hold" }
 
 export interface ColRow extends Array<number> {
     [key: number]: number;
@@ -10,7 +11,7 @@ export interface ColRow extends Array<number> {
 
 export let CONST = {
     PLAY_FIELD : {
-        BLOCK_SIZE : 30,
+        BLOCK_SIZE : 10,
         BLOCK_IMAGE_SIZE : 100,
         ROW_COUNT : 20,
         COL_COUNT : 10,
@@ -33,15 +34,15 @@ export let CONST = {
             TetrominoType.Z
         ],
         IMAGES : {
-            I: 'cyan-dot',
-            J: 'blue-dot',
-            L: 'orange-dot',
-            O: 'yellow-dot',
-            S: 'green-dot',
-            T: 'purple-dot',
-            Z: 'red-dot'
+            I: 'cyan-block',
+            J: 'blue-block',
+            L: 'orange-block',
+            O: 'yellow-block',
+            S: 'green-block',
+            T: 'purple-block',
+            Z: 'red-block'
         },
-        DOTS : {
+        BLOCKS : {
             I: {
                 0:[[0,1],[1,1],[2,1],[3,1]],
                 R:[[2,0],[2,1],[2,2],[2,3]],
@@ -136,3 +137,5 @@ export let CONST = {
         }
     }
 };
+
+export const BLOCK_SIZE = CONST.PLAY_FIELD.BLOCK_SIZE; 

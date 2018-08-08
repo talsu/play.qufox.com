@@ -1,55 +1,58 @@
-import { CONST, TetrominoType } from "../const/const";
+import { CONST, BLOCK_SIZE, TetrominoType } from "../const/const";
+import { ObjectBase } from './objectBase';
 import { TetrominoBox } from "./tetrominoBox";
 
-export class TetrominoBoxQueue {
-    private scene: Phaser.Scene;
+export class TetrominoBoxQueue extends ObjectBase {
     private container: Phaser.GameObjects.Container;
-    private boxs: TetrominoBox[];
-    private randomBag: TetrominoType[];
-    private typeQueue: TetrominoType[];
+    private boxs: TetrominoBox[] = [];
+    private randomBag: TetrominoType[] = [];
+    private typeQueue: TetrominoType[] = [];
 
     constructor(scene: Phaser.Scene, x: number, y: number, queueSize:number) {
-        this.scene = scene;
-
-        let size = CONST.PLAY_FIELD.BLOCK_SIZE;
-        let width = 6 * size;
-        let height = 4 * size * queueSize;
-    
+        super(scene);
+        // Create contianer.
         this.container = scene.add.container(x, y);
-
-        // this._super(me.Container, "init", [width/2 + x, height/2 + y, width, height]);
-        this.boxs = [];
-    
+        
+        // Create tetromino boxs with queue size.
         for (let i = 0; i < queueSize; ++i) {
-          let box = new TetrominoBox(this.scene, size, size + (4*size*i + size*i), 6 * size, 4 * size);
+          let box = new TetrominoBox(this.scene, BLOCK_SIZE, BLOCK_SIZE + (4*BLOCK_SIZE*i + BLOCK_SIZE*i), 6 * BLOCK_SIZE, 4 * BLOCK_SIZE);
           this.boxs.push(box);
           this.container.add(box.container);
         }
-    
-        this.boxs.forEach(item => item.hold('I'));
-        this.typeQueue = [];
-        this.randomBag = [];
     }
 
-    /*
-        https://tetris.wiki/Random_Generator
-    */
+    /**
+     * Random tetromino type generator.
+     * Push new type to Queue and return shifted item.
+     * @link https://tetris.wiki/Random_Generator
+     * @returns {TetrominoType} Generated tetromino type.
+     */
     randomTypeGenerator(): TetrominoType {
+        // Repeat until type queue is full.
         while (this.typeQueue.length < (this.boxs.length + 1)) {
+            // If random bag is empty. copy tetromino types to random bag.
             if (!this.randomBag.length) this.randomBag = CONST.TETROMINO.TYPES.slice();
-                let type = this.randomBag.splice(Math.floor(Math.random()*this.randomBag.length), 1)[0];
-                this.typeQueue.push(type);
-            }
+            // Get random item (type) from random bag.
+            let type = this.randomBag.splice(Math.floor(Math.random()*this.randomBag.length), 1)[0];
+            // Push random type to type queue.
+            this.typeQueue.push(type);
+        }
 
-            let gotType = this.typeQueue.shift();
+        // Shift type from type queue.
+        let gotType = this.typeQueue.shift();
 
-            this.boxs.forEach((box, index) => {
-            box.hold(this.typeQueue[index]);
-        });
+        // Update boxs for UI.
+        this.boxs.forEach((box, index) => box.hold(this.typeQueue[index]));
 
+        // Return shifted type.
         return gotType;
     }
 
-    clear() { this.typeQueue = []; }
-
+    /**
+     * Clear type queue and boxs.
+     */
+    clear() { 
+        this.typeQueue = []; 
+        this.boxs.forEach(box => box.hold());
+    }
 }

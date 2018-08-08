@@ -1,32 +1,39 @@
 import { CONST, TetrominoType } from "../const/const";
+import { ObjectBase } from './objectBase';
 import { Tetromino } from "./tetromino";
 
-export class TetrominoBox {
-    private scene: Phaser.Scene;
-    private graphics: Phaser.GameObjects.Graphics;
+/**
+ * Tetromino box.
+ */
+export class TetrominoBox extends ObjectBase {
     private tetromino: Tetromino;
     
     public container: Phaser.GameObjects.Container;
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
-        this.scene = scene;
+        super(scene);
         this.container = scene.add.container(x, y);
         this.container.width = width;
         this.container.height = height;
 
+        // Create background.
         let background = scene.add.graphics();
+        // Set background color.
         background.fillStyle(0x000000, 0.2);
         background.fillRect(0, 0, this.container.width, this.container.height);
-        
+        // Set background border
         background.lineStyle(1, 0xEEEEEE, 1.0);
         background.strokeRect(0, 0, this.container.width, this.container.height);
+        // Add background graphic to container.
         this.container.add(background);
-
-        this.graphics = scene.add.graphics();
-        this.container.add(this.graphics);
     }
 
-    hold(type): TetrominoType {
+    /**
+     * Hold Tetromino type and return unholded type.
+     * @param {TetrominoType} type - hold type.
+     * @returns {TetrominoType} - unholded type.
+     */
+    hold(type?: TetrominoType): TetrominoType {
         let existType:TetrominoType = null;
         if (this.tetromino) { // remove exsist tetromino.
           existType = this.tetromino.type;
@@ -36,7 +43,7 @@ export class TetrominoBox {
         }
     
         // if new type is invaild, do not create new tetromino.
-        if (CONST.TETROMINO.TYPES.indexOf(type) === -1) return existType;
+        if (!type) return existType;
     
         // create new tetromino.
         let position = {
@@ -51,12 +58,12 @@ export class TetrominoBox {
         this.tetromino = new Tetromino(this.scene, type, [], position[0], position[1]);
         this.tetromino.deactive();
         this.container.add(this.tetromino.container);
-        // this.tetromino.draw();
 
         return existType;
     }
 
-    clear() {
-        this.hold('clear');
-    }
+    /**
+     * Clear holded tetromino.
+     */
+    clear() { this.hold(); }
 }

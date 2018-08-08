@@ -5,7 +5,7 @@
  */
 
 import { PlayField } from '../objects/playField';
-import { CONST, TetrominoType, RotateType } from "../const/const";
+import { CONST, BLOCK_SIZE, InputState } from "../const/const";
 import { TetrominoBox } from "../objects/tetrominoBox";
 import { TetrominoBoxQueue } from "../objects/tetrominoBoxQueue";
 
@@ -31,13 +31,13 @@ export class MainScene extends Phaser.Scene {
     // Load background image.
     this.load.image('background', 'assets/image/bongtalk-background-default.jpg');
     // Load tetromino block images.
-    this.load.image(CONST.TETROMINO.IMAGES.Z, 'assets/image/red-dot.png');
-    this.load.image(CONST.TETROMINO.IMAGES.L, 'assets/image/orange-dot.png');
-    this.load.image(CONST.TETROMINO.IMAGES.O, 'assets/image/yellow-dot.png');
-    this.load.image(CONST.TETROMINO.IMAGES.S, 'assets/image/green-dot.png');
-    this.load.image(CONST.TETROMINO.IMAGES.I, 'assets/image/cyan-dot.png');
-    this.load.image(CONST.TETROMINO.IMAGES.J, 'assets/image/blue-dot.png');
-    this.load.image(CONST.TETROMINO.IMAGES.T, 'assets/image/purple-dot.png');
+    this.load.image(CONST.TETROMINO.IMAGES.Z, 'assets/image/red-block.png');
+    this.load.image(CONST.TETROMINO.IMAGES.L, 'assets/image/orange-block.png');
+    this.load.image(CONST.TETROMINO.IMAGES.O, 'assets/image/yellow-block.png');
+    this.load.image(CONST.TETROMINO.IMAGES.S, 'assets/image/green-block.png');
+    this.load.image(CONST.TETROMINO.IMAGES.I, 'assets/image/cyan-block.png');
+    this.load.image(CONST.TETROMINO.IMAGES.J, 'assets/image/blue-block.png');
+    this.load.image(CONST.TETROMINO.IMAGES.T, 'assets/image/purple-block.png');
   }
 
   /**
@@ -47,22 +47,19 @@ export class MainScene extends Phaser.Scene {
     // Add background Image.
     // [TODO] fit background image to game screen size.
     this.add.image(0, 300, 'background');
-    
-    // Copy block size for reuse.
-    const size = CONST.PLAY_FIELD.BLOCK_SIZE;
 
     // Create tetromino hold box.
-    this.holdBox = new TetrominoBox(this, size, size, size*6, size*4);
+    this.holdBox = new TetrominoBox(this, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*6, BLOCK_SIZE*4);
     
     // Calculate play field size.
-    let playFieldWidth = size * CONST.PLAY_FIELD.COL_COUNT;
-    let playFieldHeight = size * CONST.PLAY_FIELD.ROW_COUNT;
+    let playFieldWidth = BLOCK_SIZE * CONST.PLAY_FIELD.COL_COUNT;
+    let playFieldHeight = BLOCK_SIZE * CONST.PLAY_FIELD.ROW_COUNT;
 
     // Create tetromino queue. length = 4
-    this.tetrominoQueue = new TetrominoBoxQueue(this, this.holdBox.container.width + playFieldWidth + (2*size), 0, 4);
+    this.tetrominoQueue = new TetrominoBoxQueue(this, this.holdBox.container.width + playFieldWidth + (2*BLOCK_SIZE), 0, 4);
     
     // Create play field.
-    this.playField = new PlayField(this, this.holdBox, this.tetrominoQueue, this.holdBox.container.width + (2*size), size, playFieldWidth, playFieldHeight);
+    this.playField = new PlayField(this, this.holdBox, this.tetrominoQueue, this.holdBox.container.width + (2*BLOCK_SIZE), BLOCK_SIZE, playFieldWidth, playFieldHeight);
 
     // Create input key bindings.
     this.keys = {
@@ -104,27 +101,40 @@ export class MainScene extends Phaser.Scene {
   /*
       https://tetris.wiki/DAS
   */
-  chargeDAS(direction:string, isPressed:boolean, time:number, init?:number, repeat?:number) {
-    if (!this.dasFlags[direction]) this.dasFlags[direction] = 0;
-    let oldValue = this.dasFlags[direction];
-    if (isPressed) this.dasFlags[direction] += time;
-    else this.dasFlags[direction] = 0;
-    let newValue = this.dasFlags[direction];
+  chargeDAS(input:string, isPressed:boolean, time:number, init?:number, repeat?:number) {
+    // Set initial value to 0.
+    if (!this.dasFlags[input]) this.dasFlags[input] = 0;
+    // Copy old value.
+    let oldValue = this.dasFlags[input];
+    // If pressed increase value by time. (ms)
+    if (isPressed) this.dasFlags[input] += time;
+    // If not pressed reset value to 0.
+    else this.dasFlags[input] = 0;
+    // Copy new value.
+    let newValue = this.dasFlags[input];
 
-    if (oldValue == 0 && newValue) this.onInput(direction, "press");
-    if (oldValue && newValue == 0) this.onInput(direction, "release");
+    // If old value is 0 and new value is positive, key is pressed.
+    if (oldValue == 0 && newValue) this.onInput(input, InputState.PRESS);
+    // If old value is positive but new value is 0, key is release.
+    if (oldValue && newValue == 0) this.onInput(input, InputState.RELEASE);
 
+    // If new value is 0, stop this function.
     if (newValue == 0) return;
 
+    // Delay value between 'press' and first 'hold' state.
     let initDelay = init || CONST.PLAY_FIELD.DAS_MS;
+    // Delay value between 'hold' and next 'hold' state.
     let repeatDelay = repeat || CONST.PLAY_FIELD.AR_MS;
+    // Last 'hold' state called time.
     let rOld = Math.floor((oldValue - initDelay) / repeatDelay);
+    // New 'hold' state time.
     let rNew = Math.floor((newValue - initDelay) / repeatDelay);
 
+    // Call 'hold' state.
     if (rNew >= 0 && rOld < rNew) {
       if (rOld < 0) rOld = -1;
       for (let i = 0; i < (rNew - rOld); ++i) {
-        this.onInput(direction, "hold");
+        this.onInput(input, InputState.HOLD);
       }
     }
   }
@@ -134,7 +144,7 @@ export class MainScene extends Phaser.Scene {
    * @param direction direction
    * @param state key state - press, hold, release
    */
-  onInput(direction: string, state: string) {
+  onInput(direction: string, state: InputState) {
     this.playField.onInput(direction, state);
   }
 }
