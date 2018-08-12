@@ -8,15 +8,18 @@ import { PlayField } from '../objects/playField';
 import { CONST, BLOCK_SIZE, InputState } from "../const/const";
 import { TetrominoBox } from "../objects/tetrominoBox";
 import { TetrominoBoxQueue } from "../objects/tetrominoBoxQueue";
+import { LevelIndicator } from '../objects/levelIndicator';
+import { Engine } from '../engine';
 
 /**
  * MainSecene
  */
 export class MainScene extends Phaser.Scene {
   private keys: { LEFT: Phaser.Input.Keyboard.Key; RIGHT: Phaser.Input.Keyboard.Key; CTRL: Phaser.Input.Keyboard.Key; UP: Phaser.Input.Keyboard.Key; SPACE: Phaser.Input.Keyboard.Key; DOWN: Phaser.Input.Keyboard.Key; Z: Phaser.Input.Keyboard.Key; X: Phaser.Input.Keyboard.Key; C: Phaser.Input.Keyboard.Key; };
-  private holdBox: TetrominoBox;
-  private playField: PlayField;
-  private tetrominoQueue: TetrominoBoxQueue;
+  // private holdBox: TetrominoBox;
+  // private playField: PlayField;
+  // private tetrominoQueue: TetrominoBoxQueue;
+  private engine: Engine;
   private lastUpdateTime: number = null;
   private dasFlags: any = {};
 
@@ -49,17 +52,19 @@ export class MainScene extends Phaser.Scene {
     this.add.image(0, 300, 'background');
 
     // Create tetromino hold box.
-    this.holdBox = new TetrominoBox(this, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*6, BLOCK_SIZE*4);
-    
+    const holdBox = new TetrominoBox(this, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*6, BLOCK_SIZE*4);
+    // Create level indicator.
+    const levelIndicator = new LevelIndicator(this, BLOCK_SIZE, BLOCK_SIZE*6);
+
     // Calculate play field size.
-    let playFieldWidth = BLOCK_SIZE * CONST.PLAY_FIELD.COL_COUNT;
-    let playFieldHeight = BLOCK_SIZE * CONST.PLAY_FIELD.ROW_COUNT;
+    const playFieldWidth = BLOCK_SIZE * CONST.PLAY_FIELD.COL_COUNT;
+    const playFieldHeight = BLOCK_SIZE * CONST.PLAY_FIELD.ROW_COUNT;
 
     // Create tetromino queue. length = 4
-    this.tetrominoQueue = new TetrominoBoxQueue(this, this.holdBox.container.width + playFieldWidth + (2*BLOCK_SIZE), 0, 4);
+    const tetrominoQueue = new TetrominoBoxQueue(this, holdBox.container.width + playFieldWidth + (2*BLOCK_SIZE), 0, 4);
     
     // Create play field.
-    this.playField = new PlayField(this, this.holdBox, this.tetrominoQueue, this.holdBox.container.width + (2*BLOCK_SIZE), BLOCK_SIZE, playFieldWidth, playFieldHeight);
+    const playField = new PlayField(this, holdBox.container.width + (2*BLOCK_SIZE), BLOCK_SIZE, playFieldWidth, playFieldHeight);
 
     // Create input key bindings.
     this.keys = {
@@ -73,6 +78,10 @@ export class MainScene extends Phaser.Scene {
       X: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X),
       C: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
     };
+
+    this.engine = new Engine(playField, holdBox, tetrominoQueue, levelIndicator);
+
+    playField.start();
   }
 
   /**
@@ -145,6 +154,6 @@ export class MainScene extends Phaser.Scene {
    * @param state key state - press, hold, release
    */
   onInput(direction: string, state: InputState) {
-    this.playField.onInput(direction, state);
+    this.engine.onInput(direction, state);
   }
 }

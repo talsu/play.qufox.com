@@ -1,25 +1,21 @@
 import { CONST, TetrominoType, ColRow, InputState } from "../const/const";
 import { ObjectBase } from './objectBase';
 import { Tetromino } from "./tetromino";
-import { TetrominoBox } from "../objects/tetrominoBox";
-import { TetrominoBoxQueue } from "../objects/tetrominoBoxQueue";
+import { TetrominoBox } from "./tetrominoBox";
+import { TetrominoBoxQueue } from "./tetrominoBoxQueue";
 
 /**
  * Play field
  */
 export class PlayField extends ObjectBase {
-    private holdBox: TetrominoBox;
-    private queue: TetrominoBoxQueue;
     private deactiveTetrominos: Tetromino[];
     private activeTetromino: Tetromino;
     private canHold: boolean;
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
     
-    constructor(scene: Phaser.Scene, holdBox: TetrominoBox, queue: TetrominoBoxQueue,  x: number, y: number, width:number, height:number) {
+    constructor(scene: Phaser.Scene, x: number, y: number, width:number, height:number) {
         super(scene);
-        this.holdBox = holdBox;
-        this.queue = queue;
 
         // Create container and set size.
         this.container = scene.add.container(x, y);
@@ -36,9 +32,6 @@ export class PlayField extends ObjectBase {
         background.strokeRect(0, 0, this.container.width, this.container.height);
         // Add background graphic to container.
         this.container.add(background);
-
-        // Start game
-        this.start();
     }
 
     /**
@@ -49,10 +42,8 @@ export class PlayField extends ObjectBase {
         this.activeTetromino = null;
         // Clear deactive tetrominos.
         this.deactiveTetrominos = [];
-        // Clear tetromino hold box.
-        this.holdBox.clear();
-        // Clear next tetromino queue.
-        this.queue.clear();
+        // Emit start event.
+        this.emit('start');
         // Spawn Tetromino.
         this.spawnTetromino();
     }
@@ -63,7 +54,8 @@ export class PlayField extends ObjectBase {
      */
     spawnTetromino(type?:TetrominoType): void {
         // Get tetrominoType from param or generate random type from queue.
-        let tetrominotype = type || this.queue.randomTypeGenerator();
+        let tetrominotype = type;
+        if (!tetrominotype) this.emit('generateRandomType', (genType:TetrominoType) => {tetrominotype = genType});
         // Create new tetromino.
         let tetromino = new Tetromino(this.scene, tetrominotype, this.getDeactiveBlocks());
         // Check spwan is success
@@ -83,6 +75,7 @@ export class PlayField extends ObjectBase {
                 this.restartAutoDropTimer();
             }
         } else { // If swpan is fail, it means GAME OVER.
+            this.emit('gameOver');
             console.log('Game Over');
             // Destroy created tetromino.
             tetromino.destroy();
@@ -154,15 +147,17 @@ export class PlayField extends ObjectBase {
                 case "hold":
                 // If canHold flag is true and active tetromino is exists, do hold.
                 if (this.canHold && this.activeTetromino) {
-                    // Do hold type and get unholded type.
-                    let unholdedType = this.holdBox.hold(this.activeTetromino.type);
+                    const holdType = this.activeTetromino.type;
                     // Destroy active tetromino.
                     this.container.remove(this.activeTetromino.container);
                     this.activeTetromino.destroy();
                     this.activeTetromino = null;
                     
-                    // Spwan new tetromino with un holded type.
-                    this.spawnTetromino(unholdedType);
+                    // Do hold type and get unholded type.
+                    this.emit('hold', holdType, (unholdedType: TetrominoType) => {
+                        // Spwan new tetromino with un holded type.
+                        this.spawnTetromino(unholdedType);
+                    });
         
                     // Set can hold flag false.
                     // You can only 1 time hold in 1 tetromino spwan.

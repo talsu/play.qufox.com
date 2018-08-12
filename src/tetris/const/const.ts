@@ -11,7 +11,7 @@ export interface ColRow extends Array<number> {
 
 export let CONST = {
     PLAY_FIELD : {
-        BLOCK_SIZE : 10,
+        BLOCK_SIZE : 30,
         BLOCK_IMAGE_SIZE : 100,
         ROW_COUNT : 20,
         COL_COUNT : 10,
