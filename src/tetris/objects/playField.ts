@@ -1,15 +1,13 @@
 import { CONST, TetrominoType, ColRow, InputState } from "../const/const";
 import { ObjectBase } from './objectBase';
 import { Tetromino } from "./tetromino";
-import { TetrominoBox } from "./tetrominoBox";
-import { TetrominoBoxQueue } from "./tetrominoBoxQueue";
 
 /**
  * Play field
  */
 export class PlayField extends ObjectBase {
-    private deactiveTetrominos: Tetromino[];
-    private activeTetromino: Tetromino;
+    private deactiveTetrominos: Tetromino[] = [];
+    private activeTetromino: Tetromino = null;
     private canHold: boolean;
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
@@ -35,17 +33,24 @@ export class PlayField extends ObjectBase {
     }
 
     /**
-     * Start game.
+     * Clear all tetromino
      */
-    start() {
+    clear() {
+        // Destroy active tetromino.
+        if (this.activeTetromino){
+            this.container.remove(this.activeTetromino.container);
+            this.activeTetromino.destroy();
+        }
+        // Destory all deactive tetrominos.
+        this.deactiveTetrominos.forEach(tetromino => {
+            this.container.remove(tetromino.container);
+            tetromino.destroy();
+        });
+
         // Clear active tetromino.
         this.activeTetromino = null;
         // Clear deactive tetrominos.
         this.deactiveTetrominos = [];
-        // Emit start event.
-        this.emit('start');
-        // Spawn Tetromino.
-        this.spawnTetromino();
     }
 
     /**
@@ -55,7 +60,7 @@ export class PlayField extends ObjectBase {
     spawnTetromino(type?:TetrominoType): void {
         // Get tetrominoType from param or generate random type from queue.
         let tetrominotype = type;
-        if (!tetrominotype) this.emit('generateRandomType', (genType:TetrominoType) => {tetrominotype = genType});
+        if (!tetrominotype) this.emit('generateRandomType', (genType:TetrominoType) => tetrominotype = genType);
         // Create new tetromino.
         let tetromino = new Tetromino(this.scene, tetrominotype, this.getDeactiveBlocks());
         // Check spwan is success
@@ -75,23 +80,10 @@ export class PlayField extends ObjectBase {
                 this.restartAutoDropTimer();
             }
         } else { // If swpan is fail, it means GAME OVER.
-            this.emit('gameOver');
-            console.log('Game Over');
             // Destroy created tetromino.
             tetromino.destroy();
-            // Destroy active tetromino.
-            if (this.activeTetromino){
-                this.container.remove(this.activeTetromino.container);
-                this.activeTetromino.destroy();
-            }
-            // Destory all deactive tetrominos.
-            this.deactiveTetrominos.forEach(tetromino => {
-                this.container.remove(tetromino.container);
-                tetromino.destroy();
-            });
-            // [TODO] Show game over screen and score.
-            // Start new game.
-            this.start();
+            // Emit game over event
+            this.emit('gameOver');
         }
         // Set can hold flag true.
         // You can only 1 time hold in 1 tetromino spwan.

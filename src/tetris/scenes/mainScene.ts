@@ -81,7 +81,7 @@ export class MainScene extends Phaser.Scene {
 
     this.engine = new Engine(playField, holdBox, tetrominoQueue, levelIndicator);
 
-    playField.start();
+    this.engine.start();
   }
 
   /**
