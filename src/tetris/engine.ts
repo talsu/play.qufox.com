@@ -13,6 +13,10 @@ export class Engine {
     private queue: TetrominoBoxQueue;
     private levelIndicator: LevelIndicator;
 
+    private level:number;
+    private score:number;
+    private clearedLines:number;
+
     constructor(playField: PlayField, holdBox: TetrominoBox, queue: TetrominoBoxQueue, levelIndicator: LevelIndicator) {
         this.playField = playField;
         this.holdBox = holdBox;
@@ -22,18 +26,36 @@ export class Engine {
         this.playField.on('gameOver', this.gameOver.bind(this));
         this.playField.on('generateRandomType', this.onPlayFieldGenerateType.bind(this));
         this.playField.on('hold', this.onPlayFieldHold.bind(this));
+        this.playField.on('clearLine', this.onClearLine.bind(this));
+    }
+
+    /**
+     * Clear - reset stats
+     */
+    clear() {
+        this.level = 1;
+        this.score = 0;
+        this.clearedLines = 0;
     }
 
     /**
      * Start game.
      */
     start() {
+        // Clear stats.
+        this.clear();
         // Clear tetromino hold box.
         this.holdBox.clear();
         // Clear next tetromino queue.
         this.queue.clear();
         // Clear Play field.
         this.playField.clear();
+        // Clear level indicator.
+        this.levelIndicator.clear();
+
+        // Set level indicator.
+        this.levelIndicator.setLevel(this.level);
+        this.levelIndicator.setScore(this.score);
 
         // Spawn tetromino.
         this.playField.spawnTetromino();
@@ -56,6 +78,23 @@ export class Engine {
      */
     onPlayFieldHold(type: TetrominoType, typeReceiver:(type: TetrominoType) => void) {
         if (typeReceiver) typeReceiver(this.holdBox.hold(type));
+    }
+
+    /**
+     * Update stats when line cleared.
+     * @param rows cleared rows.
+     */
+    onClearLine(rows:number[]){
+        const minLevel = 1;
+        const maxLevel = 20;
+        this.clearedLines += rows.length;
+        this.level =  Math.min(maxLevel, Math.max(minLevel, Math.ceil(this.clearedLines / 10))); 
+        this.levelIndicator.setLevel(this.level);
+        let baseScore = {1:100,2:300,3:500,4:800}[rows.length];
+        if (baseScore) {
+            this.score += (baseScore * this.level);
+            this.levelIndicator.setScore(this.score);
+        }
     }
 
     /**

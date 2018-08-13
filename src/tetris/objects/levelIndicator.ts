@@ -28,4 +28,9 @@ export class LevelIndicator extends ObjectBase {
     setText() {
         this.text.setText(`Level\n${this.level}\nScore\n${this.score}`);
     }
+
+    clear() {
+        this.setLevel(1);
+        this.setScore(0);
+    }
 }

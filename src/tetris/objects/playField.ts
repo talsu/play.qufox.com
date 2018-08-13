@@ -190,6 +190,7 @@ export class PlayField extends ObjectBase {
             });
         });
 
+        this.emit('clearLine', needClearRows);
     }
 
     /**
