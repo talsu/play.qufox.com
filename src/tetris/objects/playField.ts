@@ -1,4 +1,4 @@
-import { CONST, TetrominoType, ColRow, InputState } from "../const/const";
+import { CONST, TetrominoType, ColRow, InputState, RotateType } from "../const/const";
 import { ObjectBase } from './objectBase';
 import { Tetromino } from "./tetromino";
 
@@ -11,6 +11,7 @@ export class PlayField extends ObjectBase {
     private canHold: boolean;
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
+    private droppedRotateType: RotateType;
     
     constructor(scene: Phaser.Scene, x: number, y: number, width:number, height:number) {
         super(scene);
@@ -111,13 +112,13 @@ export class PlayField extends ObjectBase {
         if (state == InputState.PRESS || state == InputState.HOLD) {
             switch (input) {
                 case "left":
-                this.setLockTimer(this.activeTetromino.moveLeft());
+                this.setLockTimer(this.activeTetromino.moveLeft(), true);
                 break;
                 case "right":
-                this.setLockTimer(this.activeTetromino.moveRight());
+                this.setLockTimer(this.activeTetromino.moveRight(), true);
                 break;
                 case "softDrop":
-                this.setLockTimer(this.activeTetromino.moveDown());
+                this.setLockTimer(this.activeTetromino.moveDown(), true);
                 break;
             }
         }
@@ -133,6 +134,7 @@ export class PlayField extends ObjectBase {
                 break;
                 case "hardDrop":
                 this.activeTetromino.hardDrop();
+                this.droppedRotateType = this.activeTetromino.rotateType;
                 this.lock();
                 // [TODO] hard Drop effect animation
                 break;
@@ -163,6 +165,7 @@ export class PlayField extends ObjectBase {
     /**
      * Clear line.
      * @param {Tetromino} lockedTetromino - locked tetromino.
+     * @returns {number} Cleared line count.
      */
     clearLine(lockedTetromino:Tetromino) {
         // get rows for check clear line.
@@ -189,8 +192,8 @@ export class PlayField extends ObjectBase {
                 this.deactiveTetrominos.splice(this.deactiveTetrominos.indexOf(tetromino), 1);
             });
         });
-
-        this.emit('clearLine', needClearRows);
+        
+        return needClearRows.length;
     }
 
     /**
@@ -212,7 +215,18 @@ export class PlayField extends ObjectBase {
 
         // clear line 
         // [TODO] clear line dealay and animation
-        this.clearLine(lockedTetromino);
+        let clearedLineCount = this.clearLine(lockedTetromino);
+
+        // Emit lock event.
+        this.emit('lock', 
+            clearedLineCount, 
+            lockedTetromino.type,
+            this.droppedRotateType,
+            lockedTetromino.rotateType,
+            lockedTetromino.lastMovement,
+            lockedTetromino.lastKickDataIndex,
+            lockedTetromino.getTSpinCornerOccupiedCount()
+        );
 
         // ARE
         this.scene.time.delayedCall(CONST.PLAY_FIELD.ARE_MS, () => this.spawnTetromino(), [], this);
@@ -232,6 +246,8 @@ export class PlayField extends ObjectBase {
                     this.activeTetromino.moveDown() &&
                     this.activeTetromino.isLockable()
                 ) {
+                    // Set dropped rotate type.
+                    this.droppedRotateType = this.activeTetromino.rotateType;
                     this.startLockTimer();
                 }
             },
@@ -280,13 +296,16 @@ export class PlayField extends ObjectBase {
 
     /**
      * setLockTimer
-     * @param {boolean} moveSuccess 
+     * @param {boolean} moveSuccess Was successful move.
+     * @param {boolean} setDroppedRotate Set dropped rotate.
      */
-    setLockTimer(moveSuccess: boolean): void {
+    setLockTimer(moveSuccess: boolean, setDroppedRotate?: boolean): void {
         // If tetromino move success.
         if (moveSuccess) {
             // If active teromino is lockable.
             if (this.activeTetromino.isLockable()){
+                // Set dropped rotate type.
+                if (setDroppedRotate) this.droppedRotateType = this.activeTetromino.rotateType;
                 // Restart lock timer.
                 this.stopLockTimer();
                 this.startLockTimer();

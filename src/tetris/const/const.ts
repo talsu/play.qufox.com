@@ -10,6 +10,23 @@ export interface ColRow extends Array<number> {
 }
 
 export let CONST = {
+    SCORE : {
+        'Single' : 100,
+        'T-Spin Mini': 100,
+        'Back to Back T-Spin Mini': 150,
+        'T-Spin Mini Single': 200,
+        'Double': 300,
+        'T-Spin': 400,
+        'Triple': 500,
+        'Tetris': 800,
+        'T-Spin Single': 800,
+        'Back to Back T-Spin Single': 1200,
+        'Back to Back Tetris': 1200,
+        'T-Spin Double': 1200,
+        'T-Spin Triple': 1600,
+        'Back to Back T-Spin Double': 1800,
+        'Back to Back T-Spin Triple': 2400
+    },
     PLAY_FIELD : {
         BLOCK_SIZE : 30,
         BLOCK_IMAGE_SIZE : 100,
@@ -86,6 +103,7 @@ export let CONST = {
                 L:[[1,0],[0,1],[1,1],[0,2]]
             }
         },
+        T_SPIN_CORNER: [[0,0], [2,0], [2,2], [0,2]],
         ROTATE_SEQ : [RotateType.UP, RotateType.RIGHT, RotateType.DOWN, RotateType.LEFT],
         COLOR : {
             I:0x1cd6ff,

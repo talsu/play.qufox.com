@@ -2,7 +2,7 @@ import { PlayField } from "./objects/playField";
 import { TetrominoBox } from "./objects/tetrominoBox";
 import { TetrominoBoxQueue } from "./objects/tetrominoBoxQueue";
 import { LevelIndicator } from "./objects/levelIndicator";
-import { InputState, TetrominoType } from "./const/const";
+import { InputState, TetrominoType, RotateType, CONST } from "./const/const";
 
 /**
  * Tetris game engine.
@@ -12,6 +12,7 @@ export class Engine {
     private holdBox: TetrominoBox;
     private queue: TetrominoBoxQueue;
     private levelIndicator: LevelIndicator;
+    private isBackToBackChain: boolean = false;
 
     private level:number;
     private score:number;
@@ -26,7 +27,7 @@ export class Engine {
         this.playField.on('gameOver', this.gameOver.bind(this));
         this.playField.on('generateRandomType', this.onPlayFieldGenerateType.bind(this));
         this.playField.on('hold', this.onPlayFieldHold.bind(this));
-        this.playField.on('clearLine', this.onClearLine.bind(this));
+        this.playField.on('lock', this.onLock.bind(this));
     }
 
     /**
@@ -84,16 +85,70 @@ export class Engine {
      * Update stats when line cleared.
      * @param rows cleared rows.
      */
-    onClearLine(rows:number[]){
+    onLock(
+        clearedLineCount: number,
+        tetrominoType: TetrominoType,
+        droppedRotateType: RotateType,
+        lockedRotateType: RotateType,
+        movement: string,
+        kickDataIndex: number,
+        tSpinCornerOccupiedCount: {pointSide:number, flatSide:number}
+    ){
+        // console.log(`
+        // clearedLineCount: ${clearedLineCount}, 
+        // tetrominoType: ${tetrominoType},
+        // droppedRotateType: ${droppedRotateType},
+        // lockedRotateType: ${lockedRotateType},
+        // movement: ${movement},
+        // kickDataIndex: ${kickDataIndex},
+        // tSpinCornerOccupiedCount: ${JSON.stringify(tSpinCornerOccupiedCount)}`);
+
+        // Is T-Spin
+        let isTSpin = 
+            tetrominoType == TetrominoType.T &&
+            droppedRotateType != lockedRotateType &&
+            movement == 'rotate' &&
+            tSpinCornerOccupiedCount.pointSide + tSpinCornerOccupiedCount.flatSide > 2;
+
+        // Is T-Spin mini
+        let isTSpinMini =
+            isTSpin &&
+            tSpinCornerOccupiedCount.pointSide < 2 &&
+            kickDataIndex < 3;
+        
+        // Is Back to Back
+        let isBackToBack = false;
+        if (isTSpin || clearedLineCount) {
+            let backToBackChain = isTSpin || clearedLineCount == 4;
+            isBackToBack = this.isBackToBackChain && backToBackChain;
+            this.isBackToBackChain = backToBackChain;
+        }
+    
+        // Combine action segment.
+        let actionNameArray = [];
+        if (isTSpin) actionNameArray.push('T-Spin');
+        if (isTSpinMini) actionNameArray.push('Mini');
+        if (clearedLineCount) actionNameArray.push(['Single', 'Double', 'Triple', 'Tetris'][clearedLineCount - 1]);
+
+        // Create action name and get base score.
+        let actionName = null;
+        let scoreBase = 0;
+        if (actionNameArray.length) {
+            actionName = actionNameArray.join(' ');
+            scoreBase = CONST.SCORE[actionName] || 0;
+            if (!scoreBase) console.error(`Unexpected action - ${actionName}`);
+        }
+
         const minLevel = 1;
         const maxLevel = 20;
-        this.clearedLines += rows.length;
+        this.clearedLines += clearedLineCount;
         this.level =  Math.min(maxLevel, Math.max(minLevel, Math.ceil(this.clearedLines / 10))); 
         this.levelIndicator.setLevel(this.level);
-        let baseScore = {1:100,2:300,3:500,4:800}[rows.length];
-        if (baseScore) {
-            this.score += (baseScore * this.level);
+        if (scoreBase) {
+            let score = scoreBase * (isBackToBack?1.5:1) * this.level;
+            this.score += score;
             this.levelIndicator.setScore(this.score);
+            console.log(`${isBackToBack?'Back to Back ':''}${actionName} - ${score} (${scoreBase}${isBackToBack?' x 1.5':''} x ${this.level})`);
         }
     }
 

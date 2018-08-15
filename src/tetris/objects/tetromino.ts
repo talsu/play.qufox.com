@@ -9,7 +9,7 @@ export class Tetromino extends ObjectBase {
     private row: number;
     private deactiveBlocks: ColRow[] = null;
     private blockedPositions: ColRow[];
-    private rotateType: RotateType = RotateType.UP;
+    public rotateType: RotateType = RotateType.UP;
     private ghostBlockGraphics: Phaser.GameObjects.Graphics;
     private blockImages: Phaser.GameObjects.Container;
     private lockAnimationTween: Phaser.Tweens.Tween;
@@ -17,6 +17,8 @@ export class Tetromino extends ObjectBase {
     public isSpawnSuccess: boolean;
     public container: Phaser.GameObjects.Container;
     public type: TetrominoType;
+    public lastMovement: string;
+    public lastKickDataIndex: number;
     
     constructor(scene: Phaser.Scene, type: TetrominoType, blockedPositions?: ColRow[], col?:number, row?:number) {
         super(scene);
@@ -61,16 +63,17 @@ export class Tetromino extends ObjectBase {
         let initRow = row || 0;
 
         // Move to initial position and set spawn state.
-        this.isSpawnSuccess = this.move(initCol, initRow);
+        this.isSpawnSuccess = this.move(initCol, initRow, 'spwan');
     }
 
     /**
      * Move tetromino.
      * @param {number} col - Col position. 
      * @param {number} row - Row position.
+     * @param {string} movement - Action name for save last movement.
      * @returns {boolean} - Is move success.
      */
-    move(col:number, row:number):boolean {
+    private move(col:number, row:number, movement:string):boolean {
         // Check new position is valid and if it's invalie return false.
         if (!this.isValidPosition(this.rotateType, col, row)) return false;
         
@@ -85,7 +88,10 @@ export class Tetromino extends ObjectBase {
         this.moveBlockImages();
         // Draw ghost block.
         this.drawGhostBlocks();
-    
+        
+        // Save last movement.
+        this.lastMovement = movement;
+
         // Return true - move success.
         return true;
     }
@@ -93,27 +99,66 @@ export class Tetromino extends ObjectBase {
     /**
      * Move tetromino left.
      */
-    moveLeft():boolean { return this.move(this.col - 1, this.row); }
+    moveLeft():boolean { return this.move(this.col - 1, this.row, 'left'); }
     
     /**
      * Move tetromino right.
      */
-    moveRight():boolean { return this.move(this.col + 1, this.row); }
+    moveRight():boolean { return this.move(this.col + 1, this.row, 'right'); }
 
     /**
      * Move tetromino up.
      */
-    moveUp():boolean { return this.move(this.col, this.row - 1); }
+    moveUp():boolean { return this.move(this.col, this.row - 1, 'up'); }
 
     /**
      * Move tetromino down.
      */
-    moveDown():boolean { return this.move(this.col, this.row + 1); }
+    moveDown():boolean { return this.move(this.col, this.row + 1, 'down'); }
 
     /**
      * Move tetromino to end of down position.
      */
-    hardDrop() { while (this.moveDown()) {} }
+    hardDrop() { while (this.moveDown()) {}; this.lastMovement = 'hardDrop'; }
+
+    /**
+     * Rotate tetromino.
+     * @link https://tetris.wiki/SRS
+     * @param {boolean} isClockwise - Rotate direction. 
+     */
+    rotate(isClockwise:boolean):boolean {
+        // Get current rotate position index.
+        let index = CONST.TETROMINO.ROTATE_SEQ.indexOf(this.rotateType);
+        // Move rotate position index
+        index += isClockwise ? 1 : -1;
+        index = (CONST.TETROMINO.ROTATE_SEQ.length + index) % CONST.TETROMINO.ROTATE_SEQ.length;
+        // Get new rotate type.
+        let newRotateType = CONST.TETROMINO.ROTATE_SEQ[index];
+
+        // Get kick data.
+        let kickData = null;
+        switch (this.type) {
+            case "O": kickData = []; break; // 'O' block is not kickable and no move.
+            case "I": kickData = CONST.TETROMINO.I_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
+            default: kickData = CONST.TETROMINO.JLSTZ_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
+        }
+
+        // Get first available position from kick data and move.
+        return !kickData.length || kickData.some((colRow, index) => {
+            let newCol = this.col + colRow[0];
+            let newRow = this.row - colRow[1]; // kickData Y is opposite Row.
+            if (this.isValidPosition(newRotateType, newCol, newRow)) { // if valid position.
+                // Set new rotate type.
+                this.rotateType = newRotateType;
+                // Move
+                this.move(newCol, newRow, 'rotate');
+                // Set last kick data index;
+                this.lastKickDataIndex = index;
+                // return function.
+                return true;
+            }
+        });
+    }
 
     /**
      * Is lockable on next position.
@@ -201,43 +246,6 @@ export class Tetromino extends ObjectBase {
     }
 
     /**
-     * Rotate tetromino.
-     * @link https://tetris.wiki/SRS
-     * @param {boolean} isClockwise - Rotate direction. 
-     */
-    rotate(isClockwise:boolean):boolean {
-        // Get current rotate position index.
-        let index = CONST.TETROMINO.ROTATE_SEQ.indexOf(this.rotateType);
-        // Move rotate position index
-        index += isClockwise ? 1 : -1;
-        index = (CONST.TETROMINO.ROTATE_SEQ.length + index) % CONST.TETROMINO.ROTATE_SEQ.length;
-        // Get new rotate type.
-        let newRotateType = CONST.TETROMINO.ROTATE_SEQ[index];
-
-        // Get kick data.
-        let kickData = null;
-        switch (this.type) {
-            case "O": kickData = []; break; // 'O' block is not kickable and no move.
-            case "I": kickData = CONST.TETROMINO.I_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
-            default: kickData = CONST.TETROMINO.JLSTZ_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
-        }
-
-        // Get first available position from kick data and move.
-        return !kickData.length || kickData.some(colRow => {
-            let newCol = this.col + colRow[0];
-            let newRow = this.row - colRow[1]; // kickData Y is opposite Row.
-            if (this.isValidPosition(newRotateType, newCol, newRow)) { // if valid position.
-                // Set new rotate type.
-                this.rotateType = newRotateType;
-                // Move
-                this.move(newCol, newRow);
-                // return function.
-                return true;
-            }
-        });
-    }
-
-    /**
      * Get block position offsets.
      * @param {RotateType} rotateType - Rotate type.
      * @returns {ColRow[]} - Position offsets.
@@ -275,7 +283,7 @@ export class Tetromino extends ObjectBase {
     }
 
     /**
-     * Check is valid position.
+     * Check is valid tetromino position.
      * @param {RotateType} rotateType - Rotate type.
      * @param {number} col - Col position.
      * @param {number} row - Row position.
@@ -283,17 +291,52 @@ export class Tetromino extends ObjectBase {
      */
     isValidPosition (rotateType:RotateType, col:number, row:number): boolean {
         // Check all block is not duplicate with blocked positions. 
-        return this.getBlocks(rotateType, col, row).every(colRow => {
-            let newCol = colRow[0];
-            let newRow = colRow[1];
-            // If any block is duplicate, return false. (invalid)
-            if (this.blockedPositions.some(colRow => colRow[0] === newCol && colRow[1] === newRow)) return false;
-            // If position is out of range, return false. (invalid)
-            if (newCol < 0 || CONST.PLAY_FIELD.COL_COUNT <= newCol) return false;
-            if (newRow < 0 || CONST.PLAY_FIELD.ROW_COUNT <= newRow) return false;
+        return this.getBlocks(rotateType, col, row).every(colRow => this.isValidBlockPosition(colRow[0], colRow[1]));
+    }
 
-            return true;
-        });
+    /**
+     * Check is valid one block position.
+     * @param {number} col - Col value.
+     * @param {number} row - Row value.
+     * @returns {boolean} - Is valid.
+     */
+    isValidBlockPosition (col:number, row:number): boolean {
+        // If any block is duplicate, return false. (invalid)
+        if (this.blockedPositions.some(colRow => colRow[0] === col && colRow[1] === row)) return false;
+        // If position is out of range, return false. (invalid)
+        if (col < 0 || CONST.PLAY_FIELD.COL_COUNT <= col) return false;
+        if (row < 0 || CONST.PLAY_FIELD.ROW_COUNT <= row) return false;
+
+        return true;
+    }
+
+    /**
+     * Get T tetromino corner occupied count.
+     * @returns {{pointSide:number, flatSide:number}} pointSide occupied count and flast side occupied count.
+     */
+    getTSpinCornerOccupiedCount(): {pointSide:number, flatSide:number} {
+        let result = {pointSide:0, flatSide:0};
+        // If tetromino is not T type, return default value.
+        if (this.type != TetrominoType.T) return result;
+        // Get each corner is occupied.
+        let cornerOccupiedArray = CONST.TETROMINO.T_SPIN_CORNER
+            .map(colRow => [this.col + colRow[0], this.row + colRow[1]])
+            .map(colRow => !this.isValidBlockPosition(colRow[0], colRow[1]));
+        
+        // Get current rotate index.
+        let rotateIndex = CONST.TETROMINO.ROTATE_SEQ.indexOf(this.rotateType);
+        
+        // Get rotated corner.
+        for (let offset = 0; offset < 4; ++offset) {
+            let index = (CONST.TETROMINO.ROTATE_SEQ.length + rotateIndex + offset) % CONST.TETROMINO.ROTATE_SEQ.length;
+            let isOccupied = cornerOccupiedArray[index];
+            if (isOccupied){
+                if (offset < 2) result.pointSide++; // index 0, 1 is point side.
+                else result.flatSide++; // index 2, 3 is flat side.
+            }
+        }
+
+        return result;
     }
 
     /**
