@@ -1,13 +1,13 @@
-import { CONST, TetrominoType } from "../const/const";
-import { ObjectBase } from './objectBase';
-import { Tetromino } from "./tetromino";
+import {TetrominoType} from "../const/const";
+import {ObjectBase} from './objectBase';
+import {Tetromino} from "./tetromino";
 
 /**
  * Tetromino box.
  */
 export class TetrominoBox extends ObjectBase {
     private tetromino: Tetromino;
-    
+
     public container: Phaser.GameObjects.Container;
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
@@ -34,26 +34,26 @@ export class TetrominoBox extends ObjectBase {
      * @returns {TetrominoType} - unholded type.
      */
     hold(type?: TetrominoType): TetrominoType {
-        let existType:TetrominoType = null;
+        let existType: TetrominoType = null;
         if (this.tetromino) { // remove exsist tetromino.
-          existType = this.tetromino.type;
-          this.container.remove(this.tetromino.container);
-          this.tetromino.destroy();
-          this.tetromino = null;
+            existType = this.tetromino.type;
+            this.container.remove(this.tetromino.container);
+            this.tetromino.destroy();
+            this.tetromino = null;
         }
-    
+
         // if new type is invaild, do not create new tetromino.
         if (!type) return existType;
-    
+
         // create new tetromino.
         let position = {
-            I:[1,0.5],
-            J:[1.5,1],
-            L:[1.5,1],
-            T:[1.5,1],
-            O:[1,1],
-            Z:[1.5,1],
-            S:[1.5,1]
+            I: [1, 0.5],
+            J: [1.5, 1],
+            L: [1.5, 1],
+            T: [1.5, 1],
+            O: [1, 1],
+            Z: [1.5, 1],
+            S: [1.5, 1]
         }[type];
         this.tetromino = new Tetromino(this.scene, type, [], position[0], position[1]);
         this.tetromino.deactive();
@@ -65,5 +65,7 @@ export class TetrominoBox extends ObjectBase {
     /**
      * Clear holded tetromino.
      */
-    clear() { this.hold(); }
+    clear() {
+        this.hold();
+    }
 }

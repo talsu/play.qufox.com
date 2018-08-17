@@ -1,6 +1,6 @@
-import { CONST, TetrominoType, ColRow, InputState, RotateType } from "../const/const";
-import { ObjectBase } from './objectBase';
-import { Tetromino } from "./tetromino";
+import {CONST, TetrominoType, ColRow, InputState, RotateType} from "../const/const";
+import {ObjectBase} from './objectBase';
+import {Tetromino} from "./tetromino";
 
 /**
  * Play field
@@ -12,8 +12,8 @@ export class PlayField extends ObjectBase {
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
     private droppedRotateType: RotateType;
-    
-    constructor(scene: Phaser.Scene, x: number, y: number, width:number, height:number) {
+
+    constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene);
 
         // Create container and set size.
@@ -38,7 +38,7 @@ export class PlayField extends ObjectBase {
      */
     clear() {
         // Destroy active tetromino.
-        if (this.activeTetromino){
+        if (this.activeTetromino) {
             this.container.remove(this.activeTetromino.container);
             this.activeTetromino.destroy();
         }
@@ -58,10 +58,10 @@ export class PlayField extends ObjectBase {
      * Spawn new tetromino.
      * @param {TetrominoType} type - Tetromino type.
      */
-    spawnTetromino(type?:TetrominoType): void {
+    spawnTetromino(type?: TetrominoType): void {
         // Get tetrominoType from param or generate random type from queue.
         let tetrominotype = type;
-        if (!tetrominotype) this.emit('generateRandomType', (genType:TetrominoType) => tetrominotype = genType);
+        if (!tetrominotype) this.emit('generateRandomType', (genType: TetrominoType) => tetrominotype = genType);
         // Create new tetromino.
         let tetromino = new Tetromino(this.scene, tetrominotype, this.getDeactiveBlocks());
         // Check spwan is success
@@ -96,82 +96,85 @@ export class PlayField extends ObjectBase {
      */
     getDeactiveBlocks(): ColRow[] {
         // Get all deactive tetromino blocks and aggregate.
-        return this.deactiveTetrominos.map(tetromino => tetromino.getBlocks()).reduce((a, b) => a.concat(b),[]);
+        return this.deactiveTetrominos.map(tetromino => tetromino.getBlocks()).reduce((a, b) => a.concat(b), []);
     }
 
     /**
      * On input process.
-     * @param {string} input - input value (ex. Z, X, C, UP, Down...) 
+     * @param {string} input - input value (ex. Z, X, C, UP, Down...)
      * @param {InputState} state - state (ex, PRESS -> HOLD -> HOLD -> RELEASE)
      */
     onInput(input: string, state: InputState) {
         // If active tetromino is not exists, ignore input.
         if (!this.activeTetromino) return;
-    
+
         // PRESS or HOLD action.
         if (state == InputState.PRESS || state == InputState.HOLD) {
             switch (input) {
                 case "left":
-                this.setLockTimer(this.activeTetromino.moveLeft(), true);
-                break;
+                    this.setLockTimer(this.activeTetromino.moveLeft(), true);
+                    break;
                 case "right":
-                this.setLockTimer(this.activeTetromino.moveRight(), true);
-                break;
+                    this.setLockTimer(this.activeTetromino.moveRight(), true);
+                    break;
                 case "softDrop":
-                this.setLockTimer(this.activeTetromino.moveDown(), true);
-                break;
+                    this.setLockTimer(this.activeTetromino.moveDown(), true);
+                    break;
             }
         }
-    
+
         // Only PRESS action.
         if (state == InputState.PRESS) {
             switch (input) {
                 case "clockwise":
-                this.setLockTimer(this.activeTetromino.rotate(true));
-                break;
+                    this.setLockTimer(this.activeTetromino.rotate(true));
+                    break;
                 case "anticlockwise":
-                this.setLockTimer(this.activeTetromino.rotate(false));
-                break;
+                    this.setLockTimer(this.activeTetromino.rotate(false));
+                    break;
                 case "hardDrop":
-                this.activeTetromino.hardDrop();
-                this.droppedRotateType = this.activeTetromino.rotateType;
-                this.lock();
-                // [TODO] hard Drop effect animation
-                break;
+                    this.activeTetromino.hardDrop();
+                    this.droppedRotateType = this.activeTetromino.rotateType;
+                    this.lock();
+                    // TODO: hard Drop effect animation
+                    break;
                 case "hold":
-                // If canHold flag is true and active tetromino is exists, do hold.
-                if (this.canHold && this.activeTetromino) {
-                    const holdType = this.activeTetromino.type;
-                    // Destroy active tetromino.
-                    this.container.remove(this.activeTetromino.container);
-                    this.activeTetromino.destroy();
-                    this.activeTetromino = null;
-                    
-                    // Do hold type and get unholded type.
-                    this.emit('hold', holdType, (unholdedType: TetrominoType) => {
-                        // Spwan new tetromino with un holded type.
-                        this.spawnTetromino(unholdedType);
-                    });
-        
-                    // Set can hold flag false.
-                    // You can only 1 time hold in 1 tetromino spwan.
-                    this.canHold = false;
-                }
-                break;
+                    // If canHold flag is true and active tetromino is exists, do hold.
+                    if (this.canHold && this.activeTetromino) {
+                        const holdType = this.activeTetromino.type;
+                        // Destroy active tetromino.
+                        this.container.remove(this.activeTetromino.container);
+                        this.activeTetromino.destroy();
+                        this.activeTetromino = null;
+
+                        // Do hold type and get unholded type.
+                        this.emit('hold', holdType, (unholdedType: TetrominoType) => {
+                            // Spwan new tetromino with un holded type.
+                            this.spawnTetromino(unholdedType);
+                        });
+
+                        // Set can hold flag false.
+                        // You can only 1 time hold in 1 tetromino spwan.
+                        this.canHold = false;
+                    }
+                    break;
             }
         }
-     }
+    }
 
     /**
      * Clear line.
      * @param {Tetromino} lockedTetromino - locked tetromino.
      * @returns {number} Cleared line count.
      */
-    clearLine(lockedTetromino:Tetromino) {
+    clearLine(lockedTetromino: Tetromino) {
         // get rows for check clear line.
         let clearCheckRows = lockedTetromino.getBlocks()
             .map(colRow => colRow[1])
-            .reduce((result, row) => {result[row] = 1; return result;}, {});
+            .reduce((result, row) => {
+                result[row] = 1;
+                return result;
+            }, {});
 
         let needClearRows = [];
         let deactiveBlocks = this.getDeactiveBlocks();
@@ -192,7 +195,7 @@ export class PlayField extends ObjectBase {
                 this.deactiveTetrominos.splice(this.deactiveTetrominos.indexOf(tetromino), 1);
             });
         });
-        
+
         return needClearRows.length;
     }
 
@@ -214,12 +217,12 @@ export class PlayField extends ObjectBase {
         this.activeTetromino = null;
 
         // clear line 
-        // [TODO] clear line dealay and animation
+        // TODO: clear line delay and animation
         let clearedLineCount = this.clearLine(lockedTetromino);
 
         // Emit lock event.
-        this.emit('lock', 
-            clearedLineCount, 
+        this.emit('lock',
+            clearedLineCount,
             lockedTetromino.type,
             this.droppedRotateType,
             lockedTetromino.rotateType,
@@ -242,7 +245,7 @@ export class PlayField extends ObjectBase {
             delay: interval || CONST.PLAY_FIELD.GRAVITY_MS,
             callback: () => {
                 // If active tetromino is lockable, start lock timer.
-                if (this.activeTetromino && 
+                if (this.activeTetromino &&
                     this.activeTetromino.moveDown() &&
                     this.activeTetromino.isLockable()
                 ) {
@@ -255,17 +258,16 @@ export class PlayField extends ObjectBase {
             loop: true
         });
     }
-    
+
     /**
      * Stop auto drop timer.
      */
     stopAutoDropTimer() {
         if (!this.autoDropTimer) return;
-        this.scene.time.addEvent
         this.autoDropTimer.destroy();
         this.autoDropTimer = null;
     }
-    
+
     /**
      * Stop and start auto drop timer.
      * @param {number} interval - Auto drop interval. (ms)
@@ -274,7 +276,7 @@ export class PlayField extends ObjectBase {
         this.stopAutoDropTimer();
         this.startAutoDropTimer(interval);
     }
-    
+
     /**
      * Start lock timer.
      */
@@ -284,7 +286,7 @@ export class PlayField extends ObjectBase {
             this.activeTetromino.playLockAnimation(() => this.lock());
         }
     }
-    
+
     /**
      * Stop lock timer.
      */
@@ -303,13 +305,13 @@ export class PlayField extends ObjectBase {
         // If tetromino move success.
         if (moveSuccess) {
             // If active teromino is lockable.
-            if (this.activeTetromino.isLockable()){
+            if (this.activeTetromino.isLockable()) {
                 // Set dropped rotate type.
                 if (setDroppedRotate) this.droppedRotateType = this.activeTetromino.rotateType;
                 // Restart lock timer.
                 this.stopLockTimer();
                 this.startLockTimer();
-            } else { 
+            } else {
                 // Stop lock timer.
                 this.stopLockTimer();
             }

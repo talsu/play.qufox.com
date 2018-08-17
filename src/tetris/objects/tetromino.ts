@@ -1,5 +1,5 @@
-import { CONST, BLOCK_SIZE, TetrominoType, RotateType, ColRow } from '../const/const';
-import { ObjectBase } from './objectBase';
+import {CONST, BLOCK_SIZE, TetrominoType, RotateType, ColRow} from '../const/const';
+import {ObjectBase} from './objectBase';
 
 /**
  * Tetromino
@@ -9,18 +9,18 @@ export class Tetromino extends ObjectBase {
     private row: number;
     private deactiveBlocks: ColRow[] = null;
     private blockedPositions: ColRow[];
-    public rotateType: RotateType = RotateType.UP;
-    private ghostBlockGraphics: Phaser.GameObjects.Graphics;
-    private blockImages: Phaser.GameObjects.Container;
     private lockAnimationTween: Phaser.Tweens.Tween;
+    private readonly ghostBlockGraphics: Phaser.GameObjects.Graphics;
+    private readonly blockImages: Phaser.GameObjects.Container;
 
+    public rotateType: RotateType = RotateType.UP;
     public isSpawnSuccess: boolean;
     public container: Phaser.GameObjects.Container;
     public type: TetrominoType;
     public lastMovement: string;
     public lastKickDataIndex: number;
-    
-    constructor(scene: Phaser.Scene, type: TetrominoType, blockedPositions?: ColRow[], col?:number, row?:number) {
+
+    constructor(scene: Phaser.Scene, type: TetrominoType, blockedPositions?: ColRow[], col?: number, row?: number) {
         super(scene);
         // Create main container.
         this.container = scene.add.container(0, 0);
@@ -36,7 +36,7 @@ export class Tetromino extends ObjectBase {
         this.blockedPositions = blockedPositions || [];
 
         // Create block image container.
-        this.blockImages = this.scene.add.container(0,0);
+        this.blockImages = this.scene.add.container(0, 0);
         this.container.add(this.blockImages);
 
         // Create block images.
@@ -47,7 +47,7 @@ export class Tetromino extends ObjectBase {
                 colRow[1] * BLOCK_SIZE + imageOffset,
                 CONST.TETROMINO.IMAGES[this.type]
             )
-            .setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+                .setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
             // Add images to image container.
             this.blockImages.add(blockImage);
         });
@@ -68,15 +68,15 @@ export class Tetromino extends ObjectBase {
 
     /**
      * Move tetromino.
-     * @param {number} col - Col position. 
+     * @param {number} col - Col position.
      * @param {number} row - Row position.
      * @param {string} movement - Action name for save last movement.
      * @returns {boolean} - Is move success.
      */
-    private move(col:number, row:number, movement:string):boolean {
-        // Check new position is valid and if it's invalie return false.
+    private move(col: number, row: number, movement: string): boolean {
+        // Check new position is valid and if it's invalid return false.
         if (!this.isValidPosition(this.rotateType, col, row)) return false;
-        
+
         // Set col, row positions.
         this.col = col;
         this.row = row;
@@ -88,7 +88,7 @@ export class Tetromino extends ObjectBase {
         this.moveBlockImages();
         // Draw ghost block.
         this.drawGhostBlocks();
-        
+
         // Save last movement.
         this.lastMovement = movement;
 
@@ -99,34 +99,46 @@ export class Tetromino extends ObjectBase {
     /**
      * Move tetromino left.
      */
-    moveLeft():boolean { return this.move(this.col - 1, this.row, 'left'); }
-    
+    moveLeft(): boolean {
+        return this.move(this.col - 1, this.row, 'left');
+    }
+
     /**
      * Move tetromino right.
      */
-    moveRight():boolean { return this.move(this.col + 1, this.row, 'right'); }
+    moveRight(): boolean {
+        return this.move(this.col + 1, this.row, 'right');
+    }
 
     /**
      * Move tetromino up.
      */
-    moveUp():boolean { return this.move(this.col, this.row - 1, 'up'); }
+    moveUp(): boolean {
+        return this.move(this.col, this.row - 1, 'up');
+    }
 
     /**
      * Move tetromino down.
      */
-    moveDown():boolean { return this.move(this.col, this.row + 1, 'down'); }
+    moveDown(): boolean {
+        return this.move(this.col, this.row + 1, 'down');
+    }
 
     /**
      * Move tetromino to end of down position.
      */
-    hardDrop() { while (this.moveDown()) {}; this.lastMovement = 'hardDrop'; }
+    hardDrop() {
+        while (this.moveDown()) {
+        }
+        this.lastMovement = 'hardDrop';
+    }
 
     /**
      * Rotate tetromino.
      * @link https://tetris.wiki/SRS
-     * @param {boolean} isClockwise - Rotate direction. 
+     * @param {boolean} isClockwise - Rotate direction.
      */
-    rotate(isClockwise:boolean):boolean {
+    rotate(isClockwise: boolean): boolean {
         // Get current rotate position index.
         let index = CONST.TETROMINO.ROTATE_SEQ.indexOf(this.rotateType);
         // Move rotate position index
@@ -138,9 +150,15 @@ export class Tetromino extends ObjectBase {
         // Get kick data.
         let kickData = null;
         switch (this.type) {
-            case "O": kickData = []; break; // 'O' block is not kickable and no move.
-            case "I": kickData = CONST.TETROMINO.I_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
-            default: kickData = CONST.TETROMINO.JLSTZ_KICK_DATA[this.rotateType + '>' + newRotateType]; break;
+            case "O":
+                kickData = [];
+                break; // 'O' block is not kickable and no move.
+            case "I":
+                kickData = CONST.TETROMINO.I_KICK_DATA[this.rotateType + '>' + newRotateType];
+                break;
+            default:
+                kickData = CONST.TETROMINO.JLSTZ_KICK_DATA[this.rotateType + '>' + newRotateType];
+                break;
         }
 
         // Get first available position from kick data and move.
@@ -164,13 +182,15 @@ export class Tetromino extends ObjectBase {
      * Is lockable on next position.
      * - Check next down position is invalid.
      */
-    isLockable():boolean { return !this.isValidPosition(this.rotateType, this.col, this.row + 1); }
+    isLockable(): boolean {
+        return !this.isValidPosition(this.rotateType, this.col, this.row + 1);
+    }
 
     /**
      * Clear line and pull down upper blocks.
-     * @param {number} row - Row to clear. 
+     * @param {number} row - Row to clear.
      */
-    clearLine(row: number):boolean {
+    clearLine(row: number): boolean {
         // remove row blocks..
         this.deactiveBlocks
             .filter(colRow => row == (this.row + colRow[1]))
@@ -198,12 +218,12 @@ export class Tetromino extends ObjectBase {
         let blockOffsets = this.getBlockOffsets();
         this.blockImages.each((blockImage) => {
             let colRow = blockOffsets[index];
-            if (colRow){ // if block position exists, set position.
+            if (colRow) { // if block position exists, set position.
                 blockImage.x = colRow[0] * BLOCK_SIZE + imageOffset;
                 blockImage.y = colRow[1] * BLOCK_SIZE + imageOffset;
             } else {
                 // if block is not exists, hide block image.
-                blockImage.alpha = 0; 
+                blockImage.alpha = 0;
             }
             index++;
         });
@@ -224,7 +244,7 @@ export class Tetromino extends ObjectBase {
         // Set color and alpha.
         this.ghostBlockGraphics.fillStyle(CONST.TETROMINO.COLOR[this.type]);
         this.ghostBlockGraphics.alpha = 0.3;
-        
+
         // Draw rect each position.
         this.getBlockOffsets().forEach(colRow => {
             this.ghostBlockGraphics.fillRect(
@@ -250,10 +270,10 @@ export class Tetromino extends ObjectBase {
      * @param {RotateType} rotateType - Rotate type.
      * @returns {ColRow[]} - Position offsets.
      */
-    getBlockOffsets (rotateType?:RotateType): ColRow[] {
+    getBlockOffsets(rotateType?: RotateType): ColRow[] {
         return this.deactiveBlocks || CONST.TETROMINO.BLOCKS[this.type][rotateType || this.rotateType];
     }
-    
+
     /**
      * Get block positions.
      * @param {RotateType} rotateType - Rotate type.
@@ -261,12 +281,12 @@ export class Tetromino extends ObjectBase {
      * @param {number} row - Row position.
      * @returns {ColRow[]} - Block positions.
      */
-    getBlocks (rotateType?:RotateType, col?:number, row?:number): ColRow[] {
+    getBlocks(rotateType?: RotateType, col?: number, row?: number): ColRow[] {
         let colBase = (col === undefined) ? this.col : col;
         let rowBase = (row === undefined) ? this.row : row;
-        // Add opsition offsets and return.
+        // Add position offsets and return.
         return this.getBlockOffsets(rotateType).map(colRow => {
-          return [colBase + colRow[0], rowBase + colRow[1]];
+            return [colBase + colRow[0], rowBase + colRow[1]];
         });
     }
 
@@ -277,7 +297,9 @@ export class Tetromino extends ObjectBase {
     getGhostRowOffset(): number {
         let row = this.row;
         // Increase row value while position is valid. (like hard drop)
-        while (this.isValidPosition(this.rotateType, this.col, row)) { row++; }
+        while (this.isValidPosition(this.rotateType, this.col, row)) {
+            row++;
+        }
         // Calculate offset and return;
         return row - this.row - 1;
     }
@@ -289,7 +311,7 @@ export class Tetromino extends ObjectBase {
      * @param {number} row - Row position.
      * @returns {boolean} - Is valid.
      */
-    isValidPosition (rotateType:RotateType, col:number, row:number): boolean {
+    isValidPosition(rotateType: RotateType, col: number, row: number): boolean {
         // Check all block is not duplicate with blocked positions. 
         return this.getBlocks(rotateType, col, row).every(colRow => this.isValidBlockPosition(colRow[0], colRow[1]));
     }
@@ -300,37 +322,37 @@ export class Tetromino extends ObjectBase {
      * @param {number} row - Row value.
      * @returns {boolean} - Is valid.
      */
-    isValidBlockPosition (col:number, row:number): boolean {
+    isValidBlockPosition(col: number, row: number): boolean {
         // If any block is duplicate, return false. (invalid)
         if (this.blockedPositions.some(colRow => colRow[0] === col && colRow[1] === row)) return false;
         // If position is out of range, return false. (invalid)
-        if (col < 0 || CONST.PLAY_FIELD.COL_COUNT <= col) return false;
-        if (row < 0 || CONST.PLAY_FIELD.ROW_COUNT <= row) return false;
-
-        return true;
+        return !(
+            (col < 0 || CONST.PLAY_FIELD.COL_COUNT <= col) ||
+            (row < 0 || CONST.PLAY_FIELD.ROW_COUNT <= row)
+        );
     }
 
     /**
      * Get T tetromino corner occupied count.
-     * @returns {{pointSide:number, flatSide:number}} pointSide occupied count and flast side occupied count.
+     * @returns {{pointSide:number, flatSide:number}} pointSide occupied count and flat side occupied count.
      */
-    getTSpinCornerOccupiedCount(): {pointSide:number, flatSide:number} {
-        let result = {pointSide:0, flatSide:0};
+    getTSpinCornerOccupiedCount(): { pointSide: number, flatSide: number } {
+        let result = {pointSide: 0, flatSide: 0};
         // If tetromino is not T type, return default value.
         if (this.type != TetrominoType.T) return result;
         // Get each corner is occupied.
         let cornerOccupiedArray = CONST.TETROMINO.T_SPIN_CORNER
             .map(colRow => [this.col + colRow[0], this.row + colRow[1]])
             .map(colRow => !this.isValidBlockPosition(colRow[0], colRow[1]));
-        
+
         // Get current rotate index.
         let rotateIndex = CONST.TETROMINO.ROTATE_SEQ.indexOf(this.rotateType);
-        
+
         // Get rotated corner.
         for (let offset = 0; offset < 4; ++offset) {
             let index = (CONST.TETROMINO.ROTATE_SEQ.length + rotateIndex + offset) % CONST.TETROMINO.ROTATE_SEQ.length;
             let isOccupied = cornerOccupiedArray[index];
-            if (isOccupied){
+            if (isOccupied) {
                 if (offset < 2) result.pointSide++; // index 0, 1 is point side.
                 else result.flatSide++; // index 2, 3 is flat side.
             }
@@ -355,13 +377,13 @@ export class Tetromino extends ObjectBase {
         this.container.remove(this.blockImages);
         this.container.remove(this.ghostBlockGraphics);
 
-        // Destroy containter.
+        // Destroy container.
         this.container.destroy();
     }
 
     /**
      * Play lock animation.
-     * @param {Function} callback - Callback function on complete. 
+     * @param {Function} callback - Callback function on complete.
      */
     playLockAnimation(callback?: Function) {
         // If animiation is exists, stop animation.
@@ -390,7 +412,9 @@ export class Tetromino extends ObjectBase {
     /**
      * Is lock animation is Playing.
      */
-    isPlayingLockAnimation(): boolean { return Boolean(this.lockAnimationTween); }
+    isPlayingLockAnimation(): boolean {
+        return Boolean(this.lockAnimationTween);
+    }
 
     /**
      * Stop lock animation.
