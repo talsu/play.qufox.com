@@ -1,40 +1,73 @@
 import {ObjectBase} from "./objectBase";
 
 export class LevelIndicator extends ObjectBase {
-    private text: Phaser.GameObjects.Text;
-    private level: number;
-    private score: number;
+    private readonly levelText: Phaser.GameObjects.Text;
+    private readonly container: Phaser.GameObjects.Container;
+    private readonly scoreText: Phaser.GameObjects.Text;
+    private readonly actionText: Phaser.GameObjects.Text;
+    private readonly comboText: Phaser.GameObjects.Text;
+    private actionTextShowEvent: Phaser.Time.TimerEvent;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene);
-
-        this.text = scene.add.text(x, y, "Level\n1\nScore\n0", {
+        // Create container.
+        this.container = scene.add.container(x, y);
+        const fontStyle = {
             fontFamily: "Arial Black",
             fontSize: 24,
             color: "#ffffff"
-        });
-        this.text.setStroke('#03396c', 5);
+        };
+        this.levelText = scene.add.text(0, 0, "Level\n1", fontStyle);
+        this.levelText.setStroke('#03396c', 5);
+        this.levelText.setShadow(2, 2, '#03396c', 0, true, false);
+        this.container.add(this.levelText);
 
-        //  Apply the shadow to the Stroke only
-        this.text.setShadow(2, 2, '#03396c', 0, true, false);
+        this.scoreText = scene.add.text(0, 70, "Score\n0", fontStyle);
+        this.scoreText.setStroke('#03396c', 5);
+        this.scoreText.setShadow(2, 2, '#03396c', 0, true, false);
+        this.container.add(this.scoreText);
+
+        this.actionText = scene.add.text(0, 140, "", fontStyle);
+        this.actionText.setStroke('#03396c', 5);
+        this.actionText.setShadow(2, 2, '#03396c', 0, true, false);
+        this.container.add(this.actionText);
+
+        this.comboText = scene.add.text(0, 210, "", fontStyle);
+        this.comboText.setStroke('#03396c', 5);
+        this.comboText.setShadow(2, 2, '#03396c', 0, true, false);
+        this.container.add(this.comboText);
     }
 
     setLevel(level: number) {
-        this.level = level;
-        this.setText();
+        this.levelText.setText(`Level\n${level}`);
     }
 
     setScore(score: number) {
-        this.score = score;
-        this.setText();
+        this.scoreText.setText(`Score\n${score}`);
     }
 
-    setText() {
-        this.text.setText(`Level\n${this.level}\nScore\n${this.score}`);
+    setAction(action?: string) {
+        if (this.actionTextShowEvent) {
+            this.actionTextShowEvent.destroy();
+            this.actionTextShowEvent = null;
+        }
+        this.actionText.setText(action || '');
+        this.actionTextShowEvent = this.scene.time.addEvent({
+            delay: 3000, callback: () => {
+                this.actionText.setText('');
+            }, callbackScope: this
+        });
+    }
+
+    setCombo(combo?: number) {
+        if (!combo || combo < 0) this.comboText.setText('');
+        else this.comboText.setText(`${combo} Combo`);
     }
 
     clear() {
         this.setLevel(1);
         this.setScore(0);
+        this.setAction();
+        this.setCombo();
     }
 }

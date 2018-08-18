@@ -157,12 +157,16 @@ export class Engine {
         if (scoreBase) {
             let score = scoreBase * (isBackToBack ? 1.5 : 1) * this.level;
             this.score += score;
-            console.log(`${isBackToBack ? 'Back to Back ' : ''}${actionName} - ${score} (${scoreBase}${isBackToBack ? ' x 1.5' : ''} x ${this.level})`);
+            const actionFullName = `${isBackToBack ? 'Back to Back ' : ''}${actionName}`;
+            this.levelIndicator.setAction(actionFullName);
+            console.log(`${actionFullName} - ${score} (${scoreBase}${isBackToBack ? ' x 1.5' : ''} x ${this.level})`);
         }
 
         // Add Combo score.
         if (clearedLineCount) this.comboCount++;
         else this.comboCount = -1;
+
+        this.levelIndicator.setCombo(this.comboCount);
 
         if (this.comboCount > 0) {
             let score = 50 * this.comboCount * this.level;
