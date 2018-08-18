@@ -91,6 +91,7 @@ export class Engine {
      * @param {RotateType} lockedRotateType - Rotate type when locked.
      * @param {string} movement - Last movement.
      * @param {number} kickDataIndex - Kick data index. (how many kick occurred.)
+     * @param {{ softDrop: number, hardDrop: number, autoDrop: number }} dropCounter - Drop count data.
      * @param {{ pointSide: number, flatSide: number }} tSpinCornerOccupiedCount - T tetromino corner occupied count.
      */
     onLock(
@@ -100,17 +101,9 @@ export class Engine {
         lockedRotateType: RotateType,
         movement: string,
         kickDataIndex: number,
+        dropCounter: { softDrop: number, hardDrop: number, autoDrop: number },
         tSpinCornerOccupiedCount: { pointSide: number, flatSide: number }
     ) {
-        // console.log(`
-        // clearedLineCount: ${clearedLineCount}, 
-        // tetrominoType: ${tetrominoType},
-        // droppedRotateType: ${droppedRotateType},
-        // lockedRotateType: ${lockedRotateType},
-        // movement: ${movement},
-        // kickDataIndex: ${kickDataIndex},
-        // tSpinCornerOccupiedCount: ${JSON.stringify(tSpinCornerOccupiedCount)}`);
-
         // Calculate level.
         const minLevel = 1;
         const maxLevel = 20;
@@ -162,18 +155,23 @@ export class Engine {
             console.log(`${actionFullName} - ${score} (${scoreBase}${isBackToBack ? ' x 1.5' : ''} x ${this.level})`);
         }
 
-        // Add Combo score.
+        // Add combo score.
         if (clearedLineCount) this.comboCount++;
         else this.comboCount = -1;
 
         this.levelIndicator.setCombo(this.comboCount);
 
         if (this.comboCount > 0) {
-            let score = 50 * this.comboCount * this.level;
-            this.score += score;
-            console.log(`Combo ${this.comboCount} - ${score} (50 x ${this.comboCount} x ${this.level})`);
+            const comboScore = 50 * this.comboCount * this.level;
+            this.score += comboScore;
+            console.log(`Combo ${this.comboCount} - ${comboScore} (50 x ${this.comboCount} x ${this.level})`);
         }
 
+        // Add drop score.
+        this.score += dropCounter.softDrop; // Soft drop is 1 point per cell.
+        this.score += dropCounter.hardDrop * 2; // Hard drop is 2 point per cell.
+
+        // Update indicator.
         this.levelIndicator.setLevel(this.level);
         this.levelIndicator.setScore(this.score);
     }

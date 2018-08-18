@@ -118,7 +118,7 @@ export class PlayField extends ObjectBase {
                     this.setLockTimer(this.activeTetromino.moveRight(), true);
                     break;
                 case "softDrop":
-                    this.setLockTimer(this.activeTetromino.moveDown(), true);
+                    this.setLockTimer(this.activeTetromino.moveDown('softDrop'), true);
                     break;
             }
         }
@@ -228,6 +228,7 @@ export class PlayField extends ObjectBase {
             lockedTetromino.rotateType,
             lockedTetromino.lastMovement,
             lockedTetromino.lastKickDataIndex,
+            lockedTetromino.dropCounter,
             lockedTetromino.getTSpinCornerOccupiedCount()
         );
 
@@ -246,7 +247,7 @@ export class PlayField extends ObjectBase {
             callback: () => {
                 // If active tetromino is lockable, start lock timer.
                 if (this.activeTetromino &&
-                    this.activeTetromino.moveDown() &&
+                    this.activeTetromino.moveDown('autoDrop') &&
                     this.activeTetromino.isLockable()
                 ) {
                     // Set dropped rotate type.

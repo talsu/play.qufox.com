@@ -19,6 +19,11 @@ export class Tetromino extends ObjectBase {
     public type: TetrominoType;
     public lastMovement: string;
     public lastKickDataIndex: number;
+    public dropCounter: { softDrop: number, hardDrop: number, autoDrop: number } = {
+        softDrop: 0,
+        hardDrop: 0,
+        autoDrop: 0
+    };
 
     constructor(scene: Phaser.Scene, type: TetrominoType, blockedPositions?: ColRow[], col?: number, row?: number) {
         super(scene);
@@ -80,6 +85,7 @@ export class Tetromino extends ObjectBase {
         // Set col, row positions.
         this.col = col;
         this.row = row;
+
         // Set container x, y.
         this.container.x = this.col * BLOCK_SIZE;
         this.container.y = this.row * BLOCK_SIZE;
@@ -119,16 +125,19 @@ export class Tetromino extends ObjectBase {
 
     /**
      * Move tetromino down.
+     * @param {string} dropType - Check drop type for scoring. (soft, hard, auto)
      */
-    moveDown(): boolean {
-        return this.move(this.col, this.row + 1, 'down');
+    moveDown(dropType: string): boolean {
+        const isSuccess = this.move(this.col, this.row + 1, 'down');
+        if (isSuccess) this.dropCounter[dropType]++; // Increase drop count when move success.
+        return isSuccess
     }
 
     /**
      * Move tetromino to end of down position.
      */
     hardDrop() {
-        while (this.moveDown()) {
+        while (this.moveDown('hardDrop')) {
         }
         this.lastMovement = 'hardDrop';
     }
