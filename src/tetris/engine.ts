@@ -66,7 +66,7 @@ export class Engine {
 
     /**
      * Generate tetromino type request from play field.
-     * get type from queue, and pass type to playfield.
+     * get type from queue, and pass type to play field.
      * @param typeReceiver Generated tetromino type receive callback.
      */
     onPlayFieldGenerateType(typeReceiver: (type: TetrominoType) => void) {
@@ -75,9 +75,9 @@ export class Engine {
 
     /**
      * Hold tetromino type request from play field.
-     * insert type to hold box and get unholded type, and pass unholded type to play field.
+     * insert type to hold box and get released type, and pass released type to play field.
      * @param type Tetromino type to hold.
-     * @param typeReceiver Unholed type receive callback.
+     * @param typeReceiver Released type receive callback.
      */
     onPlayFieldHold(type: TetrominoType, typeReceiver: (type: TetrominoType) => void) {
         if (typeReceiver) typeReceiver(this.holdBox.hold(type));

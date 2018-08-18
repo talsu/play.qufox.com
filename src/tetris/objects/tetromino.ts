@@ -7,7 +7,7 @@ import {ObjectBase} from './objectBase';
 export class Tetromino extends ObjectBase {
     private col: number;
     private row: number;
-    private deactiveBlocks: ColRow[] = null;
+    private inactiveBlocks: ColRow[] = null;
     private blockedPositions: ColRow[];
     private lockAnimationTween: Phaser.Tweens.Tween;
     private readonly ghostBlockGraphics: Phaser.GameObjects.Graphics;
@@ -152,7 +152,7 @@ export class Tetromino extends ObjectBase {
         switch (this.type) {
             case "O":
                 kickData = [];
-                break; // 'O' block is not kickable and no move.
+                break; // 'O' block can not be kick and move.
             case "I":
                 kickData = CONST.TETROMINO.I_KICK_DATA[this.rotateType + '>' + newRotateType];
                 break;
@@ -192,19 +192,19 @@ export class Tetromino extends ObjectBase {
      */
     clearLine(row: number): boolean {
         // remove row blocks..
-        this.deactiveBlocks
+        this.inactiveBlocks
             .filter(colRow => row == (this.row + colRow[1]))
-            .forEach((colRow) => this.deactiveBlocks.splice(this.deactiveBlocks.indexOf(colRow), 1));
+            .forEach((colRow) => this.inactiveBlocks.splice(this.inactiveBlocks.indexOf(colRow), 1));
         // pull down upper blocks.
-        this.deactiveBlocks
+        this.inactiveBlocks
             .filter(colRow => row > (this.row + colRow[1]))
             .forEach(colRow => colRow[1] = colRow[1] + 1);
 
-        // draw deactive blocks
+        // draw inactive blocks
         this.moveBlockImages();
 
         // if Tetromino is empty return true;
-        return !this.deactiveBlocks.length;
+        return !this.inactiveBlocks.length;
     }
 
     /**
@@ -238,8 +238,8 @@ export class Tetromino extends ObjectBase {
         // Clear old ghost graphic.
         this.ghostBlockGraphics.clear();
 
-        // If block is deactive or show ghost option is off or ghost row offset is not exist, stop draw.
-        if (this.deactiveBlocks || !CONST.TETROMINO.SHOW_GHOST || !ghostRowOffset) return;
+        // If block is inactive or show ghost option is off or ghost row offset is not exist, stop draw.
+        if (this.inactiveBlocks || !CONST.TETROMINO.SHOW_GHOST || !ghostRowOffset) return;
 
         // Set color and alpha.
         this.ghostBlockGraphics.fillStyle(CONST.TETROMINO.COLOR[this.type]);
@@ -256,13 +256,13 @@ export class Tetromino extends ObjectBase {
     }
 
     /**
-     * Deactive tetromino.
+     * Inactive tetromino.
      */
-    deactive() {
+    inactive() {
         // Destroy ghost graphics.
         this.ghostBlockGraphics.destroy();
-        // Copy current block position offsets to deactive positions.
-        this.deactiveBlocks = this.getBlockOffsets().map(colRow => [colRow[0], colRow[1]]);
+        // Copy current block position offsets to inactive positions.
+        this.inactiveBlocks = this.getBlockOffsets().map(colRow => [colRow[0], colRow[1]]);
     }
 
     /**
@@ -271,7 +271,7 @@ export class Tetromino extends ObjectBase {
      * @returns {ColRow[]} - Position offsets.
      */
     getBlockOffsets(rotateType?: RotateType): ColRow[] {
-        return this.deactiveBlocks || CONST.TETROMINO.BLOCKS[this.type][rotateType || this.rotateType];
+        return this.inactiveBlocks || CONST.TETROMINO.BLOCKS[this.type][rotateType || this.rotateType];
     }
 
     /**
@@ -386,7 +386,7 @@ export class Tetromino extends ObjectBase {
      * @param {Function} callback - Callback function on complete.
      */
     playLockAnimation(callback?: Function) {
-        // If animiation is exists, stop animation.
+        // If animation is exists, stop animation.
         if (this.lockAnimationTween) this.stopLockAnimation();
         // Create animation.
         this.lockAnimationTween = this.scene.add.tween({

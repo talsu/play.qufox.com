@@ -29,20 +29,20 @@ export class TetrominoBox extends ObjectBase {
     }
 
     /**
-     * Hold Tetromino type and return unholded type.
+     * Hold Tetromino type and return released type.
      * @param {TetrominoType} type - hold type.
-     * @returns {TetrominoType} - unholded type.
+     * @returns {TetrominoType} - released type.
      */
     hold(type?: TetrominoType): TetrominoType {
         let existType: TetrominoType = null;
-        if (this.tetromino) { // remove exsist tetromino.
+        if (this.tetromino) { // remove exist tetromino.
             existType = this.tetromino.type;
             this.container.remove(this.tetromino.container);
             this.tetromino.destroy();
             this.tetromino = null;
         }
 
-        // if new type is invaild, do not create new tetromino.
+        // if new type is invalid, do not create new tetromino.
         if (!type) return existType;
 
         // create new tetromino.
@@ -56,14 +56,14 @@ export class TetrominoBox extends ObjectBase {
             S: [1.5, 1]
         }[type];
         this.tetromino = new Tetromino(this.scene, type, [], position[0], position[1]);
-        this.tetromino.deactive();
+        this.tetromino.inactive();
         this.container.add(this.tetromino.container);
 
         return existType;
     }
 
     /**
-     * Clear holded tetromino.
+     * Clear held tetromino.
      */
     clear() {
         this.hold();

@@ -6,7 +6,7 @@ import {Tetromino} from "./tetromino";
  * Play field
  */
 export class PlayField extends ObjectBase {
-    private deactiveTetrominos: Tetromino[] = [];
+    private inactiveTetrominos: Tetromino[] = [];
     private activeTetromino: Tetromino = null;
     private canHold: boolean;
     private container: Phaser.GameObjects.Container;
@@ -42,16 +42,16 @@ export class PlayField extends ObjectBase {
             this.container.remove(this.activeTetromino.container);
             this.activeTetromino.destroy();
         }
-        // Destory all deactive tetrominos.
-        this.deactiveTetrominos.forEach(tetromino => {
+        // Destroy all inactive tetrominos.
+        this.inactiveTetrominos.forEach(tetromino => {
             this.container.remove(tetromino.container);
             tetromino.destroy();
         });
 
         // Clear active tetromino.
         this.activeTetromino = null;
-        // Clear deactive tetrominos.
-        this.deactiveTetrominos = [];
+        // Clear inactive tetrominos.
+        this.inactiveTetrominos = [];
     }
 
     /**
@@ -60,12 +60,12 @@ export class PlayField extends ObjectBase {
      */
     spawnTetromino(type?: TetrominoType): void {
         // Get tetrominoType from param or generate random type from queue.
-        let tetrominotype = type;
-        if (!tetrominotype) this.emit('generateRandomType', (genType: TetrominoType) => tetrominotype = genType);
+        let tetrominoType = type;
+        if (!tetrominoType) this.emit('generateRandomType', (genType: TetrominoType) => tetrominoType = genType);
         // Create new tetromino.
-        let tetromino = new Tetromino(this.scene, tetrominotype, this.getDeactiveBlocks());
-        // Check spwan is success
-        if (tetromino.isSpawnSuccess) { // If swpan is success.
+        let tetromino = new Tetromino(this.scene, tetrominoType, this.getInactiveBlocks());
+        // Check spawn is success
+        if (tetromino.isSpawnSuccess) { // If spawn is success.
             // Set active tetromino with new tetromino.
             this.activeTetromino = tetromino;
             // Add tetromino ui to play field container.
@@ -80,23 +80,23 @@ export class PlayField extends ObjectBase {
                 // Restart auto drop timer.
                 this.restartAutoDropTimer();
             }
-        } else { // If swpan is fail, it means GAME OVER.
+        } else { // If spawn is fail, it means GAME OVER.
             // Destroy created tetromino.
             tetromino.destroy();
             // Emit game over event
             this.emit('gameOver');
         }
         // Set can hold flag true.
-        // You can only 1 time hold in 1 tetromino spwan.
+        // You can only 1 time hold in 1 tetromino spawn.
         this.canHold = true;
     }
 
     /**
-     * Get deactive block positions.
+     * Get inactive block positions.
      */
-    getDeactiveBlocks(): ColRow[] {
-        // Get all deactive tetromino blocks and aggregate.
-        return this.deactiveTetrominos.map(tetromino => tetromino.getBlocks()).reduce((a, b) => a.concat(b), []);
+    getInactiveBlocks(): ColRow[] {
+        // Get all inactive tetromino blocks and aggregate.
+        return this.inactiveTetrominos.map(tetromino => tetromino.getBlocks()).reduce((a, b) => a.concat(b), []);
     }
 
     /**
@@ -147,14 +147,14 @@ export class PlayField extends ObjectBase {
                         this.activeTetromino.destroy();
                         this.activeTetromino = null;
 
-                        // Do hold type and get unholded type.
-                        this.emit('hold', holdType, (unholdedType: TetrominoType) => {
-                            // Spwan new tetromino with un holded type.
-                            this.spawnTetromino(unholdedType);
+                        // Do hold type and get released type.
+                        this.emit('hold', holdType, (releasedType: TetrominoType) => {
+                            // Spawn new tetromino with un held type.
+                            this.spawnTetromino(releasedType);
                         });
 
                         // Set can hold flag false.
-                        // You can only 1 time hold in 1 tetromino spwan.
+                        // You can only 1 time hold in 1 tetromino spawn.
                         this.canHold = false;
                     }
                     break;
@@ -177,22 +177,22 @@ export class PlayField extends ObjectBase {
             }, {});
 
         let needClearRows = [];
-        let deactiveBlocks = this.getDeactiveBlocks();
+        let inactiveBlocks = this.getInactiveBlocks();
         // get target of clear line rows.
         for (let key in clearCheckRows) {
             let row = Number(key);
-            let numberOfRowBlocks = deactiveBlocks.filter(colRow => colRow[1] == row).length;
+            let numberOfRowBlocks = inactiveBlocks.filter(colRow => colRow[1] == row).length;
             if (numberOfRowBlocks >= CONST.PLAY_FIELD.COL_COUNT) needClearRows.push(row);
         }
 
         // call clear line method each tetromino.
         needClearRows.forEach(row => {
-            let emptyTetrominos = this.deactiveTetrominos.filter(tetromino => tetromino.clearLine(row));
+            let emptyTetrominos = this.inactiveTetrominos.filter(tetromino => tetromino.clearLine(row));
             // remove empty tetromino.
             emptyTetrominos.forEach(tetromino => {
                 this.container.remove(tetromino.container);
                 tetromino.destroy();
-                this.deactiveTetrominos.splice(this.deactiveTetrominos.indexOf(tetromino), 1);
+                this.inactiveTetrominos.splice(this.inactiveTetrominos.indexOf(tetromino), 1);
             });
         });
 
@@ -210,10 +210,10 @@ export class PlayField extends ObjectBase {
         if (!this.activeTetromino.isLockable()) return;
         // Stop auto drop timer.
         this.stopAutoDropTimer();
-        // Deactive tetromino.
+        // Inactive tetromino.
         let lockedTetromino = this.activeTetromino;
-        lockedTetromino.deactive();
-        this.deactiveTetrominos.push(lockedTetromino);
+        lockedTetromino.inactive();
+        this.inactiveTetrominos.push(lockedTetromino);
         this.activeTetromino = null;
 
         // clear line 
@@ -304,7 +304,7 @@ export class PlayField extends ObjectBase {
     setLockTimer(moveSuccess: boolean, setDroppedRotate?: boolean): void {
         // If tetromino move success.
         if (moveSuccess) {
-            // If active teromino is lockable.
+            // If active tetromino is lockable.
             if (this.activeTetromino.isLockable()) {
                 // Set dropped rotate type.
                 if (setDroppedRotate) this.droppedRotateType = this.activeTetromino.rotateType;
