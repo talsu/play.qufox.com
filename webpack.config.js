@@ -1,6 +1,6 @@
-var path = require('path');
-var pathToPhaser = path.join(__dirname, '/node_modules/phaser/');
-var phaser = path.join(pathToPhaser, 'dist/phaser.js');
+const path = require('path');
+const pathToPhaser = path.join(__dirname, '/node_modules/phaser/');
+const phaser = path.join(pathToPhaser, 'dist/phaser.js');
 
 module.exports = {
     entry: './src/tetris/game.ts',
@@ -12,8 +12,7 @@ module.exports = {
         contentBase: path.resolve(__dirname, './'),
         publicPath: '/build/',
         host: '127.0.0.1',
-        port: 8080,
-        open: true
+        port: 8080
     },
     resolve: {
         extensions: ['.ts', '.js'],
@@ -21,6 +20,7 @@ module.exports = {
             phaser: phaser
         }
     },
+    devtool: "inline-source-map", // TODO: set "source-map" on production mode.
     module: {
         rules: [
             {test: /\.ts$/, loader: 'ts-loader', exclude: '/node_modules/'},
