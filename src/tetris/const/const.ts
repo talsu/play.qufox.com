@@ -12,19 +12,26 @@ export let CONST = {
     SCORE: {
         'Single': 100,
         'T-Spin Mini': 100,
-        'Back to Back T-Spin Mini': 150,
         'T-Spin Mini Single': 200,
         'Double': 300,
         'T-Spin': 400,
         'Triple': 500,
         'Tetris': 800,
         'T-Spin Single': 800,
-        'Back to Back T-Spin Single': 1200,
-        'Back to Back Tetris': 1200,
         'T-Spin Double': 1200,
-        'T-Spin Triple': 1600,
-        'Back to Back T-Spin Double': 1800,
-        'Back to Back T-Spin Triple': 2400
+        'T-Spin Triple': 1600
+    },
+    LINE_COUNT: {
+        'Single': 1,
+        'T-Spin Mini': 1,
+        'T-Spin Mini Single': 2,
+        'Double': 3,
+        'T-Spin': 4,
+        'Triple': 5,
+        'Tetris': 8,
+        'T-Spin Single': 8,
+        'T-Spin Double': 12,
+        'T-Spin Triple': 16
     },
     PLAY_FIELD: {
         BLOCK_SIZE: 30,

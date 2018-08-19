@@ -17,6 +17,7 @@ export class Engine {
     private level: number;
     private score: number;
     private clearedLines: number;
+    private nextLevelRequireClearedLines: number;
 
     private comboCount: number = -1;
 
@@ -30,6 +31,7 @@ export class Engine {
         this.playField.on('generateRandomType', this.onPlayFieldGenerateType.bind(this));
         this.playField.on('hold', this.onPlayFieldHold.bind(this));
         this.playField.on('lock', this.onLock.bind(this));
+        this.clear();
     }
 
     /**
@@ -37,6 +39,7 @@ export class Engine {
      */
     clear() {
         this.level = 1;
+        this.nextLevelRequireClearedLines = this.level * 5;
         this.score = 0;
         this.clearedLines = 0;
     }
@@ -104,12 +107,6 @@ export class Engine {
         dropCounter: { softDrop: number, hardDrop: number, autoDrop: number },
         tSpinCornerOccupiedCount: { pointSide: number, flatSide: number }
     ) {
-        // Calculate level.
-        const minLevel = 1;
-        const maxLevel = 20;
-        this.clearedLines += clearedLineCount;
-        this.level = Math.min(maxLevel, Math.max(minLevel, Math.ceil(this.clearedLines / 10)));
-
         // Is T-Spin
         let isTSpin =
             tetrominoType == TetrominoType.T &&
@@ -171,9 +168,34 @@ export class Engine {
         this.score += dropCounter.softDrop; // Soft drop is 1 point per cell.
         this.score += dropCounter.hardDrop * 2; // Hard drop is 2 point per cell.
 
+        // Calculate level.
+        if (actionName) {
+            let lineCount = CONST.LINE_COUNT[actionName];
+            if (isBackToBack) lineCount = Math.ceil(lineCount * 1.5);
+            this.addLineCount(lineCount);
+        }
+
         // Update indicator.
         this.levelIndicator.setLevel(this.level);
         this.levelIndicator.setScore(this.score);
+    }
+
+    /**
+     * Add cleared line count and level up.
+     * @param {number} count - Cleared line count.
+     */
+    addLineCount(count: number) {
+        this.clearedLines += count;
+        if (this.clearedLines >= this.nextLevelRequireClearedLines) {
+            let oldLevel = this.level;
+            while (true) {
+                this.level++;
+                this.nextLevelRequireClearedLines += this.level * 5;
+                if (this.clearedLines < this.nextLevelRequireClearedLines) break;
+            }
+            console.log(`level up ${oldLevel} -> ${this.level}`);
+            this.levelIndicator.setLevel(this.level);
+        }
     }
 
     /**
