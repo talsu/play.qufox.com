@@ -61,6 +61,7 @@ export class Engine {
 
         // Set level indicator.
         this.levelIndicator.setLevel(this.level);
+        this.levelIndicator.setLine(0, this.nextLevelRequireClearedLines);
         this.levelIndicator.setScore(this.score);
 
         // Spawn tetromino.
@@ -177,6 +178,7 @@ export class Engine {
 
         // Update indicator.
         this.levelIndicator.setLevel(this.level);
+        this.levelIndicator.setLine(this.clearedLines, this.nextLevelRequireClearedLines);
         this.levelIndicator.setScore(this.score);
     }
 

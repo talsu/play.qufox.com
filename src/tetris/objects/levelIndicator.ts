@@ -1,8 +1,9 @@
 import {ObjectBase} from "./objectBase";
 
 export class LevelIndicator extends ObjectBase {
-    private readonly levelText: Phaser.GameObjects.Text;
     private readonly container: Phaser.GameObjects.Container;
+    private readonly levelText: Phaser.GameObjects.Text;
+    private readonly lineText: Phaser.GameObjects.Text;
     private readonly scoreText: Phaser.GameObjects.Text;
     private readonly actionText: Phaser.GameObjects.Text;
     private readonly comboText: Phaser.GameObjects.Text;
@@ -17,10 +18,15 @@ export class LevelIndicator extends ObjectBase {
             fontSize: 24,
             color: "#ffffff"
         };
-        this.levelText = scene.add.text(0, 0, "Level\n1", fontStyle);
+        this.levelText = scene.add.text(0, 0, "Level 1", fontStyle);
         this.levelText.setStroke('#03396c', 5);
         this.levelText.setShadow(2, 2, '#03396c', 0, true, false);
         this.container.add(this.levelText);
+
+        this.lineText = scene.add.text(0, 35, "Goal 1", fontStyle);
+        this.lineText.setStroke('#03396c', 5);
+        this.lineText.setShadow(2, 2, '#03396c', 0, true, false);
+        this.container.add(this.lineText);
 
         this.scoreText = scene.add.text(0, 70, "Score\n0", fontStyle);
         this.scoreText.setStroke('#03396c', 5);
@@ -39,7 +45,11 @@ export class LevelIndicator extends ObjectBase {
     }
 
     setLevel(level: number) {
-        this.levelText.setText(`Level\n${level}`);
+        this.levelText.setText(`Level ${level}`);
+    }
+
+    setLine(cleared, nextGoal) {
+        this.lineText.setText(`Goal ${nextGoal - cleared}`);
     }
 
     setScore(score: number) {
@@ -66,6 +76,7 @@ export class LevelIndicator extends ObjectBase {
 
     clear() {
         this.setLevel(1);
+        this.setLine(0, 5);
         this.setScore(0);
         this.setAction();
         this.setCombo();
