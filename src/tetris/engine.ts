@@ -124,11 +124,26 @@ export class Engine {
             kickDataIndex < 3;
 
         // Is Back to Back
-        let isBackToBack = false;
-        if (isTSpin || clearedLineCount) {
-            let backToBackChain = isTSpin || clearedLineCount == 4;
-            isBackToBack = this.isBackToBackChain && backToBackChain;
-            this.isBackToBackChain = backToBackChain;
+        /**
+         * t-Spins and Mini t-Spins that do not clear any lines do not receive the Back-to-Back Bonus;
+         * instead they are scored as normal. they also cannot start a Back-to-Back sequence,
+         * however, they do not break an existing Back-to-Back sequence and so are included in the Back-to-Back description.
+         */
+        let isBackToBackBonus = false;
+        if (this.isBackToBackChain) { // back to back chain is running.
+            // is Keep up chain?
+            if (isTSpin || clearedLineCount == 4) { // if T-Spin or Tetris
+                // keep up
+                this.isBackToBackChain = true;
+                isBackToBackBonus = clearedLineCount > 0; // get back to back bonus only cleared line.
+            } else {
+                // break chain
+                this.isBackToBackChain = false;
+            }
+        } else { // back to back chain is no running.
+            // is Start chain ?
+            // if T-Spin with clear line or Tetris, start chain.
+            this.isBackToBackChain = Boolean((isTSpin && clearedLineCount) || clearedLineCount == 4);
         }
 
         // Combine action segment.
@@ -148,11 +163,11 @@ export class Engine {
 
         // Add action score.
         if (scoreBase) {
-            let score = scoreBase * (isBackToBack ? 1.5 : 1) * this.level;
+            let score = scoreBase * (isBackToBackBonus ? 1.5 : 1) * this.level;
             this.score += score;
-            const actionFullName = `${isBackToBack ? 'Back to Back ' : ''}${actionName}`;
+            const actionFullName = `${isBackToBackBonus ? 'Back to Back ' : ''}${actionName}`;
             this.levelIndicator.setAction(actionFullName);
-            console.log(`${actionFullName} - ${score} (${scoreBase}${isBackToBack ? ' x 1.5' : ''} x ${this.level})`);
+            console.log(`${actionFullName} - ${score} (${scoreBase}${isBackToBackBonus ? ' x 1.5' : ''} x ${this.level})`);
         }
 
         // Add combo score.
@@ -174,7 +189,7 @@ export class Engine {
         // Calculate level.
         if (actionName) {
             let lineCount = CONST.LINE_COUNT[actionName];
-            if (isBackToBack) lineCount = Math.ceil(lineCount * 1.5);
+            if (isBackToBackBonus) lineCount = Math.ceil(lineCount * 1.5);
             this.addLineCount(lineCount);
         }
 
