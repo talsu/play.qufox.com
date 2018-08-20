@@ -12,6 +12,7 @@ export class PlayField extends ObjectBase {
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
     private droppedRotateType: RotateType;
+    public autoDropDelay: number = 1000;
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene);
@@ -238,12 +239,11 @@ export class PlayField extends ObjectBase {
 
     /**
      * Start auto drop timer.
-     * @param {number} interval - Auto drop interval. (ms)
      */
-    startAutoDropTimer(interval?: number) {
+    startAutoDropTimer() {
         if (this.autoDropTimer) return;
         this.autoDropTimer = this.scene.time.addEvent({
-            delay: interval || CONST.PLAY_FIELD.GRAVITY_MS,
+            delay: this.autoDropDelay,
             callback: () => {
                 // If active tetromino is lockable, start lock timer.
                 if (this.activeTetromino &&
@@ -271,11 +271,10 @@ export class PlayField extends ObjectBase {
 
     /**
      * Stop and start auto drop timer.
-     * @param {number} interval - Auto drop interval. (ms)
      */
-    restartAutoDropTimer(interval?: number) {
+    restartAutoDropTimer() {
         this.stopAutoDropTimer();
-        this.startAutoDropTimer(interval);
+        this.startAutoDropTimer();
     }
 
     /**

@@ -17,7 +17,7 @@ import {Engine} from '../engine';
 export class MainScene extends Phaser.Scene {
     private keys: { LEFT: Phaser.Input.Keyboard.Key; RIGHT: Phaser.Input.Keyboard.Key; CTRL: Phaser.Input.Keyboard.Key; UP: Phaser.Input.Keyboard.Key; SPACE: Phaser.Input.Keyboard.Key; DOWN: Phaser.Input.Keyboard.Key; Z: Phaser.Input.Keyboard.Key; X: Phaser.Input.Keyboard.Key; C: Phaser.Input.Keyboard.Key; };
     // private holdBox: TetrominoBox;
-    // private playField: PlayField;
+    private playField: PlayField;
     // private tetrominoQueue: TetrominoBoxQueue;
     private engine: Engine;
     private lastUpdateTime: number = null;
@@ -64,7 +64,7 @@ export class MainScene extends Phaser.Scene {
         const tetrominoQueue = new TetrominoBoxQueue(this, holdBox.container.width + playFieldWidth + (2 * BLOCK_SIZE), 0, 4);
 
         // Create play field.
-        const playField = new PlayField(this, holdBox.container.width + (2 * BLOCK_SIZE), BLOCK_SIZE, playFieldWidth, playFieldHeight);
+        this.playField = new PlayField(this, holdBox.container.width + (2 * BLOCK_SIZE), BLOCK_SIZE, playFieldWidth, playFieldHeight);
 
         // Create input key bindings.
         this.keys = {
@@ -79,7 +79,7 @@ export class MainScene extends Phaser.Scene {
             C: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
         };
 
-        this.engine = new Engine(playField, holdBox, tetrominoQueue, levelIndicator);
+        this.engine = new Engine(this.playField, holdBox, tetrominoQueue, levelIndicator);
 
         this.engine.start();
     }
@@ -100,7 +100,7 @@ export class MainScene extends Phaser.Scene {
         // Charge DAS with key pressed state.
         this.chargeDAS("left", Phaser.Input.Keyboard.DownDuration(this.keys.LEFT), diffTime);
         this.chargeDAS("right", Phaser.Input.Keyboard.DownDuration(this.keys.RIGHT), diffTime);
-        this.chargeDAS("softDrop", Phaser.Input.Keyboard.DownDuration(this.keys.DOWN), diffTime, CONST.PLAY_FIELD.SOFTDROP_REPEAT_MS, CONST.PLAY_FIELD.SOFTDROP_REPEAT_MS);
+        this.chargeDAS("softDrop", Phaser.Input.Keyboard.DownDuration(this.keys.DOWN), diffTime, this.playField.autoDropDelay / 20, this.playField.autoDropDelay / 20);
         this.chargeDAS("hardDrop", Phaser.Input.Keyboard.DownDuration(this.keys.SPACE), diffTime);
         this.chargeDAS("anticlockwise", Phaser.Input.Keyboard.DownDuration(this.keys.Z) || Phaser.Input.Keyboard.DownDuration(this.keys.CTRL), diffTime);
         this.chargeDAS("clockwise", Phaser.Input.Keyboard.DownDuration(this.keys.X) || Phaser.Input.Keyboard.DownDuration(this.keys.UP), diffTime);

@@ -56,6 +56,8 @@ export class Engine {
         this.queue.clear();
         // Clear Play field.
         this.playField.clear();
+        // Set auto drop delay.
+        this.playField.autoDropDelay = this.getAutoDropDelay();
         // Clear level indicator.
         this.levelIndicator.clear();
 
@@ -189,15 +191,22 @@ export class Engine {
     addLineCount(count: number) {
         this.clearedLines += count;
         if (this.clearedLines >= this.nextLevelRequireClearedLines) {
-            let oldLevel = this.level;
             while (true) {
                 this.level++;
                 this.nextLevelRequireClearedLines += this.level * 5;
                 if (this.clearedLines < this.nextLevelRequireClearedLines) break;
             }
-            console.log(`level up ${oldLevel} -> ${this.level}`);
             this.levelIndicator.setLevel(this.level);
+            this.playField.autoDropDelay = this.getAutoDropDelay();
         }
+    }
+
+    /**
+     * Get auto drop speed. (milliseconds per line)
+     * Calculate with level.
+     */
+    getAutoDropDelay() {
+        return Math.pow((0.8 - ((this.level - 1) * 0.007)), (this.level - 1)) * 1000;
     }
 
     /**
