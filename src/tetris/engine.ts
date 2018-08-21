@@ -123,23 +123,18 @@ export class Engine {
             tSpinCornerOccupiedCount.pointSide < 2 &&
             kickDataIndex < 3;
 
-        // Is Back to Back
         /**
+         * Back to Back
          * t-Spins and Mini t-Spins that do not clear any lines do not receive the Back-to-Back Bonus;
          * instead they are scored as normal. they also cannot start a Back-to-Back sequence,
          * however, they do not break an existing Back-to-Back sequence and so are included in the Back-to-Back description.
          */
         let isBackToBackBonus = false;
         if (this.isBackToBackChain) { // back to back chain is running.
-            // is Keep up chain?
-            if (isTSpin || clearedLineCount == 4) { // if T-Spin or Tetris
-                // keep up
-                this.isBackToBackChain = true;
-                isBackToBackBonus = clearedLineCount > 0; // get back to back bonus only cleared line.
-            } else {
-                // break chain
-                this.isBackToBackChain = false;
-            }
+            // if T-Spin or Tetris, keep up back to back chain.
+            this.isBackToBackChain = Boolean(isTSpin || clearedLineCount == 4 || !clearedLineCount);
+            // if back to back chain and cleared line, get back to back bonus.
+            isBackToBackBonus = this.isBackToBackChain && clearedLineCount > 0;
         } else { // back to back chain is no running.
             // is Start chain ?
             // if T-Spin with clear line or Tetris, start chain.
