@@ -41,7 +41,7 @@ export let CONST = {
         DAS_MS: 267, // tetris friends : 267, 183, 150, 133, 117
         AR_MS: 50, // tetris friends : 50, 33, 22, 20, 17
         LOCK_DELAY_MS: 500,
-        ARE_MS: 0//417
+        ARE_MS: 200//417
     },
     TETROMINO: {
         SHOW_GHOST: true,
