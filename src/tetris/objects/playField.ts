@@ -78,14 +78,19 @@ export class PlayField extends ObjectBase {
                 this.startLockTimer();
             } else {
                 // Normal state.
-                // Restart auto drop timer.
-                this.restartAutoDropTimer();
+                // Move down one row immediately. - Tetris guide 2009 - 3.4
+                this.activeTetromino.moveDown('autoDrop');
+                if (this.activeTetromino.isLockable()) {
+                    this.startLockTimer();
+                }
             }
-        } else { // If spawn is fail, it means GAME OVER.
+            // Start drop timer;
+            this.restartAutoDropTimer();
+        } else { // If spawn is fail, it means Block Out GAME OVER. - Tetris Guide 2009 Chapter 10.7
             // Destroy created tetromino.
             tetromino.destroy();
             // Emit game over event
-            this.emit('gameOver');
+            this.emit('gameOver', 'Block Out');
         }
         // Set can hold flag true.
         // You can only 1 time hold in 1 tetromino spawn.
@@ -216,6 +221,15 @@ export class PlayField extends ObjectBase {
         lockedTetromino.inactive();
         this.inactiveTetrominos.push(lockedTetromino);
         this.activeTetromino = null;
+
+        // Check locked Tetromino is inside buffer zone entire.
+        // Row position is smaller then zero means buffer zone.
+        if (lockedTetromino.getBlocks().every(colRow => colRow[1] < 0)) {
+            // Lock Out Game Over.
+            // Emit game over event
+            this.emit('gameOver', 'Lock Out');
+            return;
+        }
 
         // clear line 
         // TODO: clear line delay and animation

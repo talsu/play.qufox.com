@@ -222,8 +222,8 @@ export class Engine {
     /**
      * Game over. emit from play field, when can not create tetromino anymore.
      */
-    gameOver() {
-        console.log('Game Over');
+    gameOver(gameOverType) {
+        console.log(`Game Over - ${gameOverType}`);
 
         // TODO: Show game over screen and score.
         this.start();

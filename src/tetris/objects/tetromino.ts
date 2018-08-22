@@ -51,8 +51,8 @@ export class Tetromino extends ObjectBase {
                 colRow[0] * BLOCK_SIZE + imageOffset,
                 colRow[1] * BLOCK_SIZE + imageOffset,
                 CONST.TETROMINO.IMAGES[this.type]
-            )
-                .setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+            ).setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+
             // Add images to image container.
             this.blockImages.add(blockImage);
         });
@@ -65,7 +65,7 @@ export class Tetromino extends ObjectBase {
 
         // Initial position
         let initCol = col === undefined ? 3 : col;
-        let initRow = row || 0;
+        let initRow = row || -2;
 
         // Move to initial position and set spawn state.
         this.isSpawnSuccess = this.move(initCol, initRow, 'spwan');
@@ -337,7 +337,7 @@ export class Tetromino extends ObjectBase {
         // If position is out of range, return false. (invalid)
         return !(
             (col < 0 || CONST.PLAY_FIELD.COL_COUNT <= col) ||
-            (row < 0 || CONST.PLAY_FIELD.ROW_COUNT <= row)
+            (row < (-CONST.PLAY_FIELD.ROW_COUNT) || CONST.PLAY_FIELD.ROW_COUNT <= row)
         );
     }
 
