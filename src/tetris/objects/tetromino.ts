@@ -5,8 +5,8 @@ import {ObjectBase} from './objectBase';
  * Tetromino
  */
 export class Tetromino extends ObjectBase {
-    private col: number;
-    private row: number;
+    public col: number;
+    public row: number;
     private inactiveBlocks: ColRow[] = null;
     private blockedPositions: ColRow[];
     private lockAnimationTween: Phaser.Tweens.Tween;

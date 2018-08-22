@@ -116,27 +116,38 @@ export class PlayField extends ObjectBase {
 
         // PRESS or HOLD action.
         if (state == InputState.PRESS || state == InputState.HOLD) {
+            let wasLockable: boolean;
             switch (input) {
                 case "left":
+                    wasLockable = this.activeTetromino.isLockable();
                     this.setLockTimer(this.activeTetromino.moveLeft(), true);
+                    // If exit lockable state with action, restart auto drop timer.
+                    if (wasLockable && !this.activeTetromino.isLockable()) this.restartAutoDropTimer();
                     break;
                 case "right":
+                    wasLockable = this.activeTetromino.isLockable();
                     this.setLockTimer(this.activeTetromino.moveRight(), true);
+                    // If exit lockable state with action, restart auto drop timer.
+                    if (wasLockable && !this.activeTetromino.isLockable()) this.restartAutoDropTimer();
                     break;
                 case "softDrop":
-                    this.setLockTimer(this.activeTetromino.moveDown('softDrop'), true);
+                    let softDropSuccess = this.activeTetromino.moveDown('softDrop');
+                    this.setLockTimer(softDropSuccess, true);
+                    if (softDropSuccess) this.restartAutoDropTimer();
                     break;
             }
+
         }
 
         // Only PRESS action.
         if (state == InputState.PRESS) {
             switch (input) {
                 case "clockwise":
-                    this.setLockTimer(this.activeTetromino.rotate(true));
-                    break;
                 case "anticlockwise":
-                    this.setLockTimer(this.activeTetromino.rotate(false));
+                    let beforeRow = this.activeTetromino.row;
+                    this.setLockTimer(this.activeTetromino.rotate(input == "clockwise"));
+                    // if dropped by rotate action. reset drop timer;
+                    if (beforeRow < this.activeTetromino.row) this.restartAutoDropTimer();
                     break;
                 case "hardDrop":
                     this.activeTetromino.hardDrop();
