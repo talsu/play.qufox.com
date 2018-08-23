@@ -243,9 +243,10 @@ export class Tetromino extends ObjectBase {
             if (colRow) { // if block position exists, set position.
                 blockImage.x = colRow[0] * BLOCK_SIZE + imageOffset;
                 blockImage.y = (colRow[1] + (rowOffset||0)) * BLOCK_SIZE + imageOffset;
+                blockImage.visible = true;
             } else {
                 // if block is not exists, hide block image.
-                blockImage.alpha = 0;
+                blockImage.visible = false;
             }
             index++;
         });
