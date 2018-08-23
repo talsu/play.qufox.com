@@ -34,13 +34,8 @@ export class MainScene extends Phaser.Scene {
         // Load background image.
         this.load.image('background', 'assets/image/bongtalk-background-default.jpg');
         // Load tetromino block images.
-        this.load.image(CONST.TETROMINO.IMAGES.Z, 'assets/image/red-block.png');
-        this.load.image(CONST.TETROMINO.IMAGES.L, 'assets/image/orange-block.png');
-        this.load.image(CONST.TETROMINO.IMAGES.O, 'assets/image/yellow-block.png');
-        this.load.image(CONST.TETROMINO.IMAGES.S, 'assets/image/green-block.png');
-        this.load.image(CONST.TETROMINO.IMAGES.I, 'assets/image/cyan-block.png');
-        this.load.image(CONST.TETROMINO.IMAGES.J, 'assets/image/blue-block.png');
-        this.load.image(CONST.TETROMINO.IMAGES.T, 'assets/image/purple-block.png');
+        // Puyo tetromino image.
+        this.load.spritesheet('blockSheet', 'assets/image/PPTdefaultMinoOnly.png', {frameHeight:CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE, frameWidth:CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE, margin:4, spacing:8});
     }
 
     /**
@@ -50,7 +45,6 @@ export class MainScene extends Phaser.Scene {
         // Add background Image.
         // TODO: fit background image to game screen size.
         this.add.image(0, 300, 'background');
-
         // Create tetromino hold box.
         const holdBox = new TetrominoBox(this, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE * 6, BLOCK_SIZE * 4);
         // Create level indicator.

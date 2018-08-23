@@ -1,5 +1,6 @@
 import {CONST, BLOCK_SIZE, TetrominoType, RotateType, ColRow} from '../const/const';
 import {ObjectBase} from './objectBase';
+import Container = Phaser.GameObjects.Container;
 
 /**
  * Tetromino
@@ -12,6 +13,7 @@ export class Tetromino extends ObjectBase {
     private lockAnimationTween: Phaser.Tweens.Tween;
     private readonly ghostBlockGraphics: Phaser.GameObjects.Graphics;
     private readonly blockImages: Phaser.GameObjects.Container;
+    private readonly ghostBlockImages: Phaser.GameObjects.Container;
 
     public rotateType: RotateType = RotateType.UP;
     public isSpawnSuccess: boolean;
@@ -40,6 +42,12 @@ export class Tetromino extends ObjectBase {
         // Set blocked position array.
         this.blockedPositions = blockedPositions || [];
 
+        // Create ghost block graphics.
+        this.ghostBlockImages = this.scene.add.container(0, 0);
+        this.container.add(this.ghostBlockImages);
+        this.ghostBlockGraphics = this.scene.add.graphics();
+        this.container.add(this.ghostBlockGraphics);
+
         // Create block image container.
         this.blockImages = this.scene.add.container(0, 0);
         this.container.add(this.blockImages);
@@ -48,20 +56,25 @@ export class Tetromino extends ObjectBase {
         CONST.TETROMINO.BLOCKS[this.type][this.rotateType].forEach(colRow => {
             let imageOffset = BLOCK_SIZE / 2;
             let blockImage = this.scene.add.image(
-                colRow[0] * BLOCK_SIZE + imageOffset,
-                colRow[1] * BLOCK_SIZE + imageOffset,
-                CONST.TETROMINO.IMAGES[this.type]
-            ).setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+                    colRow[0] * BLOCK_SIZE + imageOffset,
+                    colRow[1] * BLOCK_SIZE + imageOffset,
+                    'blockSheet', CONST.TETROMINO.SPRITE_IMAGE_FRAME[this.type]);
+            if (BLOCK_SIZE != CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE) blockImage.setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
 
             // Add images to image container.
             this.blockImages.add(blockImage);
+
+            let ghostImage = this.scene.add.image(
+                colRow[0] * BLOCK_SIZE + imageOffset,
+                colRow[1] * BLOCK_SIZE + imageOffset,
+                'blockSheet', 8);
+            if (BLOCK_SIZE != CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE) ghostImage.setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+
+            // Add images to image container.
+            this.ghostBlockImages.add(ghostImage);
         });
         // Move block image in block image container.
         this.moveBlockImages();
-
-        // Create ghost block graphics.
-        this.ghostBlockGraphics = this.scene.add.graphics();
-        this.container.add(this.ghostBlockGraphics);
 
         // Initial position
         let initCol = col === undefined ? 3 : col;
@@ -219,17 +232,17 @@ export class Tetromino extends ObjectBase {
     /**
      * Move block images.
      */
-    moveBlockImages() {
+    moveBlockImages(blockImages?: Container, rowOffset?: number) {
         // Calculate image position offset.
         const imageOffset = BLOCK_SIZE / 2;
         let index = 0;
         // Get block positions.
         let blockOffsets = this.getBlockOffsets();
-        this.blockImages.each((blockImage) => {
+        (blockImages || this.blockImages).each((blockImage) => {
             let colRow = blockOffsets[index];
             if (colRow) { // if block position exists, set position.
                 blockImage.x = colRow[0] * BLOCK_SIZE + imageOffset;
-                blockImage.y = colRow[1] * BLOCK_SIZE + imageOffset;
+                blockImage.y = (colRow[1] + (rowOffset||0)) * BLOCK_SIZE + imageOffset;
             } else {
                 // if block is not exists, hide block image.
                 blockImage.alpha = 0;
@@ -246,6 +259,7 @@ export class Tetromino extends ObjectBase {
         let ghostRowOffset = this.getGhostRowOffset();
         // Clear old ghost graphic.
         this.ghostBlockGraphics.clear();
+        this.ghostBlockImages.visible = false;
 
         // If block is inactive or show ghost option is off or ghost row offset is not exist, stop draw.
         if (this.inactiveBlocks || !CONST.TETROMINO.SHOW_GHOST || !ghostRowOffset) return;
@@ -253,7 +267,7 @@ export class Tetromino extends ObjectBase {
         // Set color and alpha.
         this.ghostBlockGraphics.fillStyle(CONST.TETROMINO.COLOR[this.type]);
         this.ghostBlockGraphics.alpha = 0.3;
-
+        this.ghostBlockImages.visible = true;
         // Draw rect each position.
         this.getBlockOffsets().forEach(colRow => {
             this.ghostBlockGraphics.fillRect(
@@ -262,6 +276,8 @@ export class Tetromino extends ObjectBase {
                 BLOCK_SIZE,
                 BLOCK_SIZE);
         });
+
+        this.moveBlockImages(this.ghostBlockImages, ghostRowOffset);
     }
 
     /**
@@ -270,6 +286,8 @@ export class Tetromino extends ObjectBase {
     inactive() {
         // Destroy ghost graphics.
         this.ghostBlockGraphics.destroy();
+        this.ghostBlockImages.each(block => block.destroy());
+        this.ghostBlockImages.destroy();
         // Copy current block position offsets to inactive positions.
         this.inactiveBlocks = this.getBlockOffsets().map(colRow => [colRow[0], colRow[1]]);
     }

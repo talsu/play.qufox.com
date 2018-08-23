@@ -12,18 +12,18 @@
   ],
   "devDependencies": {
     "expose-loader": "0.7.5",
-    "ts-loader": "4.4.2",
-    "typescript": "2.9.2",
-    "webpack": "4.15.0",
-    "webpack-cli": "3.0.8",
-    "webpack-dev-server": "3.1.4"
+    "ts-loader": "^4.5.0",
+    "typescript": "^3.0.1",
+    "webpack": "^4.17.1",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
     "phaser": "3.11.0"
   },
   "scripts": {
-    "dev-server": "webpack-dev-server --mode development",
-    "server": "webpack-dev-server --mode production",
+    "dev": "webpack-dev-server --mode development",
+    "start": "webpack-dev-server --mode production",
     "dev-build": "webpack --mode development",
     "build": "webpack --mode production"
   },

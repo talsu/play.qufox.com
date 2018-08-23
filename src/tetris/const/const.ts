@@ -34,8 +34,8 @@ export let CONST = {
         'T-Spin Triple': 16
     },
     PLAY_FIELD: {
-        BLOCK_SIZE: 30,
-        BLOCK_IMAGE_SIZE: 100,
+        BLOCK_SIZE: 36,
+        BLOCK_IMAGE_SIZE: 36,
         ROW_COUNT: 20,
         COL_COUNT: 10,
         DAS_MS: 267, // tetris friends : 267, 183, 150, 133, 117
@@ -62,6 +62,15 @@ export let CONST = {
             S: 'green-block',
             T: 'purple-block',
             Z: 'red-block'
+        },
+        SPRITE_IMAGE_FRAME: {
+            I: 6,
+            J: 2,
+            L: 3,
+            O: 5,
+            S: 0,
+            T: 4,
+            Z: 1
         },
         BLOCKS: {
             I: {
