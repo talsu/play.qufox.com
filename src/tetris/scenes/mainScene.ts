@@ -15,16 +15,26 @@ import {Engine} from '../engine';
  * Main scene
  */
 export class MainScene extends Phaser.Scene {
-    private keys: { LEFT: Phaser.Input.Keyboard.Key; RIGHT: Phaser.Input.Keyboard.Key; CTRL: Phaser.Input.Keyboard.Key; UP: Phaser.Input.Keyboard.Key; SPACE: Phaser.Input.Keyboard.Key; DOWN: Phaser.Input.Keyboard.Key; Z: Phaser.Input.Keyboard.Key; X: Phaser.Input.Keyboard.Key; C: Phaser.Input.Keyboard.Key; };
+    private keys: {
+        LEFT: Phaser.Input.Keyboard.Key;
+        RIGHT: Phaser.Input.Keyboard.Key;
+        CTRL: Phaser.Input.Keyboard.Key;
+        UP: Phaser.Input.Keyboard.Key;
+        SPACE: Phaser.Input.Keyboard.Key;
+        DOWN: Phaser.Input.Keyboard.Key;
+        Z: Phaser.Input.Keyboard.Key;
+        X: Phaser.Input.Keyboard.Key;
+        C: Phaser.Input.Keyboard.Key;
+        ESC: Phaser.Input.Keyboard.Key;
+    };
     // private holdBox: TetrominoBox;
     private playField: PlayField;
     // private tetrominoQueue: TetrominoBoxQueue;
     private engine: Engine;
-    private lastUpdateTime: number = null;
     private dasFlags: any = {};
 
     constructor() {
-        super({key: "MainScene"});
+        super({key: "MainScene", mapAdd: {game: 'game'}});
     }
 
     /**
@@ -70,35 +80,29 @@ export class MainScene extends Phaser.Scene {
             DOWN: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
             Z: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
             X: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X),
-            C: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
+            C: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C),
+            ESC: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
         };
 
         this.engine = new Engine(this.playField, holdBox, tetrominoQueue, levelIndicator);
-
         this.engine.start();
     }
 
     /**
      * update - call when every tick.
+     * @param {number} time - current time.
+     * @param {number} delta - time difference with before update time.
      */
-    update(): void {
-        // last updated time
-        let oldTime: number = this.lastUpdateTime === null ? new Date().getTime() : this.lastUpdateTime;
-        // current
-        let newTime = new Date().getTime();
-        // Gap between last updated and current.
-        let diffTime = newTime - oldTime;
-        // set last updated time for new time.
-        this.lastUpdateTime = newTime;
-
+    update(time, delta): void {
         // Charge DAS with key pressed state.
-        this.chargeDAS("left", Phaser.Input.Keyboard.DownDuration(this.keys.LEFT), diffTime);
-        this.chargeDAS("right", Phaser.Input.Keyboard.DownDuration(this.keys.RIGHT), diffTime);
-        this.chargeDAS("softDrop", Phaser.Input.Keyboard.DownDuration(this.keys.DOWN), diffTime, this.playField.autoDropDelay / 20, this.playField.autoDropDelay / 20);
-        this.chargeDAS("hardDrop", Phaser.Input.Keyboard.DownDuration(this.keys.SPACE), diffTime);
-        this.chargeDAS("anticlockwise", Phaser.Input.Keyboard.DownDuration(this.keys.Z) || Phaser.Input.Keyboard.DownDuration(this.keys.CTRL), diffTime);
-        this.chargeDAS("clockwise", Phaser.Input.Keyboard.DownDuration(this.keys.X) || Phaser.Input.Keyboard.DownDuration(this.keys.UP), diffTime);
-        this.chargeDAS("hold", Phaser.Input.Keyboard.DownDuration(this.keys.C), diffTime);
+        this.chargeDAS("left", Phaser.Input.Keyboard.DownDuration(this.keys.LEFT), delta);
+        this.chargeDAS("right", Phaser.Input.Keyboard.DownDuration(this.keys.RIGHT), delta);
+        this.chargeDAS("softDrop", Phaser.Input.Keyboard.DownDuration(this.keys.DOWN), delta, this.playField.autoDropDelay / 20, this.playField.autoDropDelay / 20);
+        this.chargeDAS("hardDrop", Phaser.Input.Keyboard.DownDuration(this.keys.SPACE), delta);
+        this.chargeDAS("anticlockwise", Phaser.Input.Keyboard.DownDuration(this.keys.Z) || Phaser.Input.Keyboard.DownDuration(this.keys.CTRL), delta);
+        this.chargeDAS("clockwise", Phaser.Input.Keyboard.DownDuration(this.keys.X) || Phaser.Input.Keyboard.DownDuration(this.keys.UP), delta);
+        this.chargeDAS("hold", Phaser.Input.Keyboard.DownDuration(this.keys.C), delta);
+        this.chargeDAS("pause", Phaser.Input.Keyboard.DownDuration(this.keys.ESC), delta);
     }
 
     /*

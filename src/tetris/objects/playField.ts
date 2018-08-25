@@ -12,6 +12,7 @@ export class PlayField extends ObjectBase {
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
     private droppedRotateType: RotateType;
+    private isPause: boolean = false;
     public autoDropDelay: number = 1000;
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
@@ -174,6 +175,13 @@ export class PlayField extends ObjectBase {
                         // You can only 1 time hold in 1 tetromino spawn.
                         this.canHold = false;
                     }
+                    break;
+                case "pause":
+                    if (this.isPause)
+                        this.scene.scene.resume('MainScene');
+                    else
+                        this.scene.scene.pause('MainScene');
+                    this.isPause = !this.isPause;
                     break;
             }
         }
