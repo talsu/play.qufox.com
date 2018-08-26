@@ -25,13 +25,12 @@ export class MainScene extends Phaser.Scene {
         Z: Phaser.Input.Keyboard.Key;
         X: Phaser.Input.Keyboard.Key;
         C: Phaser.Input.Keyboard.Key;
-        ESC: Phaser.Input.Keyboard.Key;
     };
-    // private holdBox: TetrominoBox;
+
     private playField: PlayField;
-    // private tetrominoQueue: TetrominoBoxQueue;
     private engine: Engine;
     private dasFlags: any = {};
+    private isPause: boolean = false;
 
     constructor() {
         super({key: "MainScene", mapAdd: {game: 'game'}});
@@ -80,8 +79,18 @@ export class MainScene extends Phaser.Scene {
             DOWN: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
             Z: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
             X: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X),
-            C: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C),
-            ESC: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+            C: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
+        };
+
+        // Pause and resume with window key down event, because Phaser key event is not working when pause.
+        window.onkeydown = (event:KeyboardEvent) => {
+            if (event.code == 'Escape' || event.key == 'Escape') {
+                if (this.isPause)
+                    this.scene.resume('MainScene');
+                else
+                    this.scene.pause('MainScene');
+                this.isPause = !this.isPause;
+            }
         };
 
         this.engine = new Engine(this.playField, holdBox, tetrominoQueue, levelIndicator);
@@ -102,7 +111,6 @@ export class MainScene extends Phaser.Scene {
         this.chargeDAS("anticlockwise", Phaser.Input.Keyboard.DownDuration(this.keys.Z) || Phaser.Input.Keyboard.DownDuration(this.keys.CTRL), delta);
         this.chargeDAS("clockwise", Phaser.Input.Keyboard.DownDuration(this.keys.X) || Phaser.Input.Keyboard.DownDuration(this.keys.UP), delta);
         this.chargeDAS("hold", Phaser.Input.Keyboard.DownDuration(this.keys.C), delta);
-        this.chargeDAS("pause", Phaser.Input.Keyboard.DownDuration(this.keys.ESC), delta);
     }
 
     /*
