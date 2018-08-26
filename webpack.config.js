@@ -20,7 +20,7 @@ module.exports = {
             phaser: phaser
         }
     },
-    devtool: "inline-source-map", // TODO: set "source-map" on production mode.
+    devtool: "source-map", // TODO: set "source-map" on production mode.
     module: {
         rules: [
             {test: /\.ts$/, loader: 'ts-loader', exclude: '/node_modules/'},
