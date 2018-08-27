@@ -5,11 +5,12 @@
  */
 
 import {PlayField} from '../objects/playField';
-import {CONST, BLOCK_SIZE, InputState} from "../const/const";
+import {CONST, getBlockSize, InputState} from "../const/const";
 import {TetrominoBox} from "../objects/tetrominoBox";
 import {TetrominoBoxQueue} from "../objects/tetrominoBoxQueue";
 import {LevelIndicator} from '../objects/levelIndicator';
 import {Engine} from '../engine';
+let BLOCK_SIZE = getBlockSize();
 
 /**
  * Main scene
@@ -44,7 +45,7 @@ export class MainScene extends Phaser.Scene {
         this.load.image('background', 'assets/image/bongtalk-background-default.jpg');
         // Load tetromino block images.
         // Puyo tetromino image.
-        this.load.spritesheet('blockSheet', 'assets/image/PPTdefaultMinoOnly.png', {frameHeight:CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE, frameWidth:CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE, margin:4, spacing:8});
+        this.load.spritesheet('blockSheet', 'assets/image/PPTdefaultMinoOnly.png', {frameHeight:CONST.SCREEN.BLOCK_IMAGE_SIZE, frameWidth:CONST.SCREEN.BLOCK_IMAGE_SIZE, margin:4, spacing:8});
     }
 
     /**
@@ -97,6 +98,13 @@ export class MainScene extends Phaser.Scene {
         this.engine.start();
     }
 
+    resize (width, height)
+    {
+        if (width === undefined) { width = this.sys.game.config.width; }
+        if (height === undefined) { height = this.sys.game.config.height; }
+
+        this.cameras.resize(width, height);
+    }
     /**
      * update - call when every tick.
      * @param {number} time - current time.

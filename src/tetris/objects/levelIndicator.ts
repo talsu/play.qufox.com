@@ -1,4 +1,6 @@
 import {ObjectBase} from "./objectBase";
+import {getBlockSize} from "../const/const";
+const BLOCK_SIZE = getBlockSize();
 
 export class LevelIndicator extends ObjectBase {
     private readonly container: Phaser.GameObjects.Container;
@@ -15,31 +17,32 @@ export class LevelIndicator extends ObjectBase {
         this.container = scene.add.container(x, y);
         const fontStyle = {
             fontFamily: "Arial Black",
-            fontSize: 24,
-            color: "#ffffff"
+            fontSize: BLOCK_SIZE,
+            color: "#ffffff",
+            thickness: BLOCK_SIZE/5
         };
         this.levelText = scene.add.text(0, 0, "Level 1", fontStyle);
-        this.levelText.setStroke('#03396c', 5);
+        this.levelText.setStroke('#03396c', fontStyle.thickness);
         this.levelText.setShadow(2, 2, '#03396c', 0, true, false);
         this.container.add(this.levelText);
 
-        this.lineText = scene.add.text(0, 35, "Goal 1", fontStyle);
-        this.lineText.setStroke('#03396c', 5);
+        this.lineText = scene.add.text(0, BLOCK_SIZE, "Goal 1", fontStyle);
+        this.lineText.setStroke('#03396c', fontStyle.thickness);
         this.lineText.setShadow(2, 2, '#03396c', 0, true, false);
         this.container.add(this.lineText);
 
-        this.scoreText = scene.add.text(0, 70, "Score\n0", fontStyle);
-        this.scoreText.setStroke('#03396c', 5);
+        this.scoreText = scene.add.text(0, BLOCK_SIZE*2, "Score 0", fontStyle);
+        this.scoreText.setStroke('#03396c', fontStyle.thickness);
         this.scoreText.setShadow(2, 2, '#03396c', 0, true, false);
         this.container.add(this.scoreText);
 
-        this.actionText = scene.add.text(0, 140, "", fontStyle);
-        this.actionText.setStroke('#03396c', 5);
+        this.actionText = scene.add.text(0, BLOCK_SIZE*4, "", fontStyle);
+        this.actionText.setStroke('#03396c', fontStyle.thickness);
         this.actionText.setShadow(2, 2, '#03396c', 0, true, false);
         this.container.add(this.actionText);
 
-        this.comboText = scene.add.text(0, 210, "", fontStyle);
-        this.comboText.setStroke('#03396c', 5);
+        this.comboText = scene.add.text(0, BLOCK_SIZE*5, "", fontStyle);
+        this.comboText.setStroke('#03396c', fontStyle.thickness);
         this.comboText.setShadow(2, 2, '#03396c', 0, true, false);
         this.container.add(this.comboText);
     }
@@ -53,7 +56,7 @@ export class LevelIndicator extends ObjectBase {
     }
 
     setScore(score: number) {
-        this.scoreText.setText(`Score\n${score}`);
+        this.scoreText.setText(`Score ${score}`);
     }
 
     setAction(action?: string) {
