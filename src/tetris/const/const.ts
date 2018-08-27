@@ -33,9 +33,12 @@ export let CONST = {
         'T-Spin Double': 12,
         'T-Spin Triple': 16
     },
-    PLAY_FIELD: {
-        BLOCK_SIZE: 36,
+    SCREEN : {
         BLOCK_IMAGE_SIZE: 36,
+        ROW_COUNT: 22,
+        COL_COUNT: 26,
+    },
+    PLAY_FIELD: {
         ROW_COUNT: 20,
         COL_COUNT: 10,
         DAS_MS: 267, // tetris friends : 267, 183, 150, 133, 117
@@ -169,4 +172,9 @@ export let CONST = {
     }
 };
 
-export const BLOCK_SIZE = CONST.PLAY_FIELD.BLOCK_SIZE; 
+export const getBlockSize = () => {
+    return Math.min(
+        window.innerWidth / CONST.SCREEN.COL_COUNT,
+        window.innerHeight / CONST.SCREEN.ROW_COUNT
+    );
+};

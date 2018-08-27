@@ -1,14 +1,16 @@
 {
-  "name": "play.qufox.com",
-  "version": "0.0.1",
-  "description": "play.qufox.com",
+  "name": "qufox-tetris",
+  "version": "0.1.0",
+  "description": "qufox-tetris is a web tetris game made with Phaser 3 framework.",
   "keywords": [
     "qufox",
     "qufox.com",
-    "play.qufox.com",
+    "tetris.qufox.com",
     "tetris",
     "game",
-    "web"
+    "web",
+    "Phaser",
+    "Phaser 3"
   ],
   "devDependencies": {
     "expose-loader": "0.7.5",
@@ -35,5 +37,10 @@
     "name": "talsu",
     "email": "talsu84@gmail.com"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://tetris.qufox.com",
+  "bugs": {
+    "url": "https://github.com/talsu/qufox-tetris/issues",
+    "email": "talsu84@gmail.com"
+  }
 }

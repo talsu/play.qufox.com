@@ -1,6 +1,7 @@
-import {CONST, BLOCK_SIZE, TetrominoType, RotateType, ColRow} from '../const/const';
+import {CONST, getBlockSize, TetrominoType, RotateType, ColRow} from '../const/const';
 import {ObjectBase} from './objectBase';
 import Container = Phaser.GameObjects.Container;
+const BLOCK_SIZE = getBlockSize();
 
 /**
  * Tetromino
@@ -59,7 +60,7 @@ export class Tetromino extends ObjectBase {
                     colRow[0] * BLOCK_SIZE + imageOffset,
                     colRow[1] * BLOCK_SIZE + imageOffset,
                     'blockSheet', CONST.TETROMINO.SPRITE_IMAGE_FRAME[this.type]);
-            if (BLOCK_SIZE != CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE) blockImage.setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+            if (BLOCK_SIZE != CONST.SCREEN.BLOCK_IMAGE_SIZE) blockImage.setScale(BLOCK_SIZE / CONST.SCREEN.BLOCK_IMAGE_SIZE);
 
             // Add images to image container.
             this.blockImages.add(blockImage);
@@ -68,7 +69,7 @@ export class Tetromino extends ObjectBase {
                 colRow[0] * BLOCK_SIZE + imageOffset,
                 colRow[1] * BLOCK_SIZE + imageOffset,
                 'blockSheet', 8);
-            if (BLOCK_SIZE != CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE) ghostImage.setScale(BLOCK_SIZE / CONST.PLAY_FIELD.BLOCK_IMAGE_SIZE);
+            if (BLOCK_SIZE != CONST.SCREEN.BLOCK_IMAGE_SIZE) ghostImage.setScale(BLOCK_SIZE / CONST.SCREEN.BLOCK_IMAGE_SIZE);
 
             // Add images to image container.
             this.ghostBlockImages.add(ghostImage);

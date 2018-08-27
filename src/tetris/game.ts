@@ -8,12 +8,12 @@
 
 import "phaser";
 import {MainScene} from "./scenes/mainScene";
-import {CONST} from "./const/const";
+import {CONST, getBlockSize} from "./const/const";
 
 // main game configuration
 const config: GameConfig = {
-    width: CONST.PLAY_FIELD.BLOCK_SIZE * 26,
-    height: CONST.PLAY_FIELD.BLOCK_SIZE * 22,
+    width: getBlockSize() * CONST.SCREEN.COL_COUNT,
+    height: getBlockSize() * CONST.SCREEN.ROW_COUNT,
     type: Phaser.AUTO,
     parent: "game",
     scene: MainScene,

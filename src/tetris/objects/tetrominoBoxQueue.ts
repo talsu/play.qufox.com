@@ -1,6 +1,7 @@
-import {CONST, BLOCK_SIZE, TetrominoType} from "../const/const";
+import {CONST, getBlockSize, TetrominoType} from "../const/const";
 import {ObjectBase} from './objectBase';
 import {TetrominoBox} from "./tetrominoBox";
+const BLOCK_SIZE = getBlockSize();
 
 export class TetrominoBoxQueue extends ObjectBase {
     private container: Phaser.GameObjects.Container;
