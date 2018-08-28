@@ -52,9 +52,8 @@ export class MainScene extends Phaser.Scene {
      * create - call after preload.
      */
     create(): void {
-        // Add background Image.
-        // TODO: fit background image to game screen size.
-        this.add.image(0, 300, 'background');
+        // Set background image.
+        this.setBackgroundImage();
         // Create tetromino hold box.
         const holdBox = new TetrominoBox(this, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE * 6, BLOCK_SIZE * 4);
         // Create level indicator.
@@ -96,6 +95,15 @@ export class MainScene extends Phaser.Scene {
 
         this.engine = new Engine(this.playField, holdBox, tetrominoQueue, levelIndicator);
         this.engine.start();
+    }
+
+    private setBackgroundImage() {
+        // Add background Image.
+        const backgroundImage = this.textures.get('background').getSourceImage();
+        const backgroundImageScale = Math.max(window.innerWidth / backgroundImage.width, window.innerHeight / backgroundImage.height);
+        const xOffset = (window.innerWidth - backgroundImage.width * backgroundImageScale) / 2;
+        const yOffset = (window.innerHeight - backgroundImage.height * backgroundImageScale) / 2;
+        this.add.image(xOffset, yOffset, 'background').setOrigin(0).setScale(backgroundImageScale);
     }
 
     resize (width, height)
