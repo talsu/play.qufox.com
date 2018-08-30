@@ -1,4 +1,4 @@
-import {CONST, TetrominoType, ColRow, InputState, RotateType} from "../const/const";
+import {CONST, TetrominoType, ColRow, InputState, RotateType, getBlockSize} from "../const/const";
 import {ObjectBase} from './objectBase';
 import {Tetromino} from "./tetromino";
 
@@ -29,7 +29,20 @@ export class PlayField extends ObjectBase {
         background.fillRect(0, 0, this.container.width, this.container.height);
         // Set background border
         background.lineStyle(1, 0xEEEEEE, 1.0);
-        background.strokeRect(0, 0, this.container.width, this.container.height);
+        background.strokeRect(-1, -1, this.container.width+2, this.container.height+2);
+
+        // background grid
+        background.lineStyle(0.5, 0xEEEEEE, 0.3);
+        const BLOCK_SIZE = getBlockSize();
+        const lineThick = 1.5;
+        for (let row = 0; row < CONST.PLAY_FIELD.ROW_COUNT; ++row)
+        for (let col = 0; col < CONST.PLAY_FIELD.COL_COUNT; ++col) {
+            background.strokeRect(
+                col * BLOCK_SIZE + lineThick,
+                row * BLOCK_SIZE + lineThick,
+                BLOCK_SIZE-(lineThick*2),
+                BLOCK_SIZE-(lineThick*2));
+        }
         // Add background graphic to container.
         this.container.add(background);
     }
