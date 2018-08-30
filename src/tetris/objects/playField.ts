@@ -37,11 +37,12 @@ export class PlayField extends ObjectBase {
         const lineThick = 1.5;
         for (let row = 0; row < CONST.PLAY_FIELD.ROW_COUNT; ++row)
         for (let col = 0; col < CONST.PLAY_FIELD.COL_COUNT; ++col) {
-            background.strokeRect(
+            background.strokeRoundedRect(
                 col * BLOCK_SIZE + lineThick,
                 row * BLOCK_SIZE + lineThick,
                 BLOCK_SIZE-(lineThick*2),
-                BLOCK_SIZE-(lineThick*2));
+                BLOCK_SIZE-(lineThick*2),
+                2);
         }
         // Add background graphic to container.
         this.container.add(background);
