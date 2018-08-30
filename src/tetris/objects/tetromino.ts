@@ -55,20 +55,23 @@ export class Tetromino extends ObjectBase {
 
         // Create block images.
         CONST.TETROMINO.BLOCKS[this.type][this.rotateType].forEach(colRow => {
-            let imageOffset = BLOCK_SIZE / 2;
-            let blockImage = this.scene.add.image(
-                    colRow[0] * BLOCK_SIZE + imageOffset,
-                    colRow[1] * BLOCK_SIZE + imageOffset,
+            const blockImage = this.scene.add.image(
+                    colRow[0] * BLOCK_SIZE,
+                    colRow[1] * BLOCK_SIZE,
                     'blockSheet', CONST.TETROMINO.SPRITE_IMAGE_FRAME[this.type]);
+            blockImage.setOrigin(0);
+
+            // blockImage.setSize(BLOCK_SIZE, 10);
             if (BLOCK_SIZE != CONST.SCREEN.BLOCK_IMAGE_SIZE) blockImage.setScale(BLOCK_SIZE / CONST.SCREEN.BLOCK_IMAGE_SIZE);
 
             // Add images to image container.
             this.blockImages.add(blockImage);
 
-            let ghostImage = this.scene.add.image(
-                colRow[0] * BLOCK_SIZE + imageOffset,
-                colRow[1] * BLOCK_SIZE + imageOffset,
+            const ghostImage = this.scene.add.image(
+                colRow[0] * BLOCK_SIZE,
+                colRow[1] * BLOCK_SIZE,
                 'blockSheet', 8);
+            ghostImage.setOrigin(0);
             if (BLOCK_SIZE != CONST.SCREEN.BLOCK_IMAGE_SIZE) ghostImage.setScale(BLOCK_SIZE / CONST.SCREEN.BLOCK_IMAGE_SIZE);
 
             // Add images to image container.
@@ -234,16 +237,14 @@ export class Tetromino extends ObjectBase {
      * Move block images.
      */
     moveBlockImages(blockImages?: Container, rowOffset?: number) {
-        // Calculate image position offset.
-        const imageOffset = BLOCK_SIZE / 2;
         let index = 0;
         // Get block positions.
         let blockOffsets = this.getBlockOffsets();
         (blockImages || this.blockImages).each((blockImage) => {
             let colRow = blockOffsets[index];
             if (colRow) { // if block position exists, set position.
-                blockImage.x = colRow[0] * BLOCK_SIZE + imageOffset;
-                blockImage.y = (colRow[1] + (rowOffset||0)) * BLOCK_SIZE + imageOffset;
+                blockImage.x = colRow[0] * BLOCK_SIZE;
+                blockImage.y = (colRow[1] + (rowOffset||0)) * BLOCK_SIZE;
                 blockImage.visible = true;
             } else {
                 // if block is not exists, hide block image.
