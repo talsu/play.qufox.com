@@ -9,6 +9,7 @@ export class PlayField extends ObjectBase {
     private inactiveTetrominos: Tetromino[] = [];
     private activeTetromino: Tetromino = null;
     private canHold: boolean;
+    private backgroundContainer: Phaser.GameObjects.Container;
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
     private droppedRotateType: RotateType;
@@ -16,20 +17,22 @@ export class PlayField extends ObjectBase {
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene);
+        
+        
 
-        // Create container and set size.
-        this.container = scene.add.container(x, y);
-        this.container.width = width;
-        this.container.height = height;
+        // Create backgroundContainer and set size.
+        this.backgroundContainer = scene.add.container(x, y);
+        this.backgroundContainer.width = width;
+        this.backgroundContainer.height = height;
 
         // Create background.
         let background = scene.add.graphics();
         // Set background color.
         background.fillStyle(0x000000, 0.4);
-        background.fillRect(0, 0, this.container.width, this.container.height);
+        background.fillRect(0, 0, this.backgroundContainer.width, this.backgroundContainer.height);
         // Set background border
         background.lineStyle(1, 0xEEEEEE, 1.0);
-        background.strokeRect(-1, -1, this.container.width+2, this.container.height+2);
+        background.strokeRect(-1, -1, this.backgroundContainer.width+2, this.backgroundContainer.height+2);
 
         // background grid
         background.lineStyle(0.5, 0xEEEEEE, 0.3);
@@ -44,8 +47,23 @@ export class PlayField extends ObjectBase {
                 BLOCK_SIZE-(lineThick*2),
                 2);
         }
-        // Add background graphic to container.
-        this.container.add(background);
+        // Add background graphic to backgroundContainer.
+        this.backgroundContainer.add(background);
+
+        // Create container and set size.
+        this.container = scene.add.container(x, y);
+        this.container.width = width;
+        this.container.height = height;
+
+        const shape = this.scene.make.graphics({});
+
+        //  Create a hash shape Graphics object
+        shape.fillStyle(0xffffff);
+
+        //  You have to begin a path for a Geometry mask to work
+        shape.beginPath();
+        shape.fillRect(x, y - (BLOCK_SIZE / 3), width, height + (BLOCK_SIZE / 3));
+        this.container.setMask(shape.createGeometryMask());
     }
 
     /**
