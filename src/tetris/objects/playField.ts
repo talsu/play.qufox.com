@@ -2,6 +2,7 @@ import {CONST, TetrominoType, ColRow, InputState, RotateType, getBlockSize} from
 import {ObjectBase} from './objectBase';
 import {Tetromino} from "./tetromino";
 
+const BLOCK_SIZE = getBlockSize();
 /**
  * Play field
  */
@@ -9,7 +10,6 @@ export class PlayField extends ObjectBase {
     private inactiveTetrominos: Tetromino[] = [];
     private activeTetromino: Tetromino = null;
     private canHold: boolean;
-    private backgroundContainer: Phaser.GameObjects.Container;
     private container: Phaser.GameObjects.Container;
     private autoDropTimer: Phaser.Time.TimerEvent;
     private droppedRotateType: RotateType;
@@ -17,53 +17,48 @@ export class PlayField extends ObjectBase {
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene);
-        
-        
-
-        // Create backgroundContainer and set size.
-        this.backgroundContainer = scene.add.container(x, y);
-        this.backgroundContainer.width = width;
-        this.backgroundContainer.height = height;
 
         // Create background.
+        const topPadding = BLOCK_SIZE / 3;
         let background = scene.add.graphics();
         // Set background color.
         background.fillStyle(0x000000, 0.4);
-        background.fillRect(0, 0, this.backgroundContainer.width, this.backgroundContainer.height);
+        background.fillRect(x, y-topPadding, width, height+topPadding);
         // Set background border
-        background.lineStyle(1, 0xEEEEEE, 1.0);
-        background.strokeRect(-1, -1, this.backgroundContainer.width+2, this.backgroundContainer.height+2);
+        const borderThick = 1;
+        background.lineStyle(borderThick, 0xEEEEEE, 1.0);
+        background.strokeRect(x-borderThick, y-topPadding-borderThick, width+(borderThick*2), height+topPadding+(borderThick*2));
 
-        // background grid
-        background.lineStyle(0.5, 0xEEEEEE, 0.3);
-        const BLOCK_SIZE = getBlockSize();
-        const lineThick = 1.5;
+
+        // // Add background graphic to backgroundContainer.
+        // this.backgroundContainer.add(background);
+        // // background grid
+
         for (let row = 0; row < CONST.PLAY_FIELD.ROW_COUNT; ++row)
         for (let col = 0; col < CONST.PLAY_FIELD.COL_COUNT; ++col) {
-            background.strokeRoundedRect(
-                col * BLOCK_SIZE + lineThick,
-                row * BLOCK_SIZE + lineThick,
-                BLOCK_SIZE-(lineThick*2),
-                BLOCK_SIZE-(lineThick*2),
-                2);
+            const backgroundBlock = this.scene.add.image(
+                x+(col * BLOCK_SIZE),
+                y+(row * BLOCK_SIZE),
+                'blockSheet', 9);
+            backgroundBlock.setOrigin(0);
+            backgroundBlock.setAlpha(0.3);
+            if (BLOCK_SIZE != CONST.SCREEN.BLOCK_IMAGE_SIZE) backgroundBlock.setScale(BLOCK_SIZE / CONST.SCREEN.BLOCK_IMAGE_SIZE);
         }
-        // Add background graphic to backgroundContainer.
-        this.backgroundContainer.add(background);
 
         // Create container and set size.
         this.container = scene.add.container(x, y);
         this.container.width = width;
         this.container.height = height;
 
-        const shape = this.scene.make.graphics({});
+        const maskShape = this.scene.make.graphics({});
 
-        //  Create a hash shape Graphics object
-        shape.fillStyle(0xffffff);
+        //  Create a Graphics object for mask.
+        maskShape.fillStyle(0xffffff);
 
         //  You have to begin a path for a Geometry mask to work
-        shape.beginPath();
-        shape.fillRect(x, y - (BLOCK_SIZE / 3), width, height + (BLOCK_SIZE / 3));
-        this.container.setMask(shape.createGeometryMask());
+        // maskShape.beginPath();
+        maskShape.fillRect(x, y - (BLOCK_SIZE / 3), width, height + (BLOCK_SIZE / 3));
+        this.container.setMask(maskShape.createGeometryMask());
     }
 
     /**
