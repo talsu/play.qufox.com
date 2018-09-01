@@ -41,7 +41,7 @@ export let CONST = {
     PLAY_FIELD: {
         ROW_COUNT: 20,
         COL_COUNT: 10,
-        DAS_MS: 267, // tetris friends : 267, 183, 150, 133, 117
+        DAS_MS: 183, // tetris friends : 267, 183, 150, 133, 117
         AR_MS: 50, // tetris friends : 50, 33, 22, 20, 17
         LOCK_DELAY_MS: 500,
         ARE_MS: 200//417
