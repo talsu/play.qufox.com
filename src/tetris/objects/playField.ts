@@ -29,17 +29,13 @@ export class PlayField extends ObjectBase {
         background.lineStyle(borderThick, 0xEEEEEE, 1.0);
         background.strokeRect(x-borderThick, y-topPadding-borderThick, width+(borderThick*2), height+topPadding+(borderThick*2));
 
-
-        // // Add background graphic to backgroundContainer.
-        // this.backgroundContainer.add(background);
-        // // background grid
-
+        // background grid
         for (let row = 0; row < CONST.PLAY_FIELD.ROW_COUNT; ++row)
         for (let col = 0; col < CONST.PLAY_FIELD.COL_COUNT; ++col) {
             const backgroundBlock = this.scene.add.image(
                 x+(col * BLOCK_SIZE),
                 y+(row * BLOCK_SIZE),
-                'blockSheet', 9);
+                'blockSheet', 10);
             backgroundBlock.setOrigin(0);
             backgroundBlock.setAlpha(0.3);
             if (BLOCK_SIZE != CONST.SCREEN.BLOCK_IMAGE_SIZE) backgroundBlock.setScale(BLOCK_SIZE / CONST.SCREEN.BLOCK_IMAGE_SIZE);
